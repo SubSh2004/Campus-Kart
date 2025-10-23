@@ -8,19 +8,34 @@ const createTransporter = () => {
     return transporter;
   }
   
-  // Create transporter with connection pooling for better performance
-  transporter = (nodemailer.default || nodemailer).createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-    pool: true, // Use connection pooling
-    maxConnections: 5, // Max concurrent connections
-    maxMessages: 100, // Max messages per connection
-    rateDelta: 1000, // Throttle to 1 second between messages
-    rateLimit: 5, // Max 5 messages per rateDelta
-  });
+  // Check if using SendGrid (for production on Render)
+  if (process.env.SENDGRID_API_KEY) {
+    console.log('📧 Using SendGrid for email delivery');
+    transporter = (nodemailer.default || nodemailer).createTransport({
+      host: 'smtp.sendgrid.net',
+      port: 587,
+      secure: false,
+      auth: {
+        user: 'apikey',
+        pass: process.env.SENDGRID_API_KEY,
+      },
+    });
+  } else {
+    // Use Gmail for local development
+    console.log('📧 Using Gmail for email delivery');
+    transporter = (nodemailer.default || nodemailer).createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+      pool: true,
+      maxConnections: 5,
+      maxMessages: 100,
+      rateDelta: 1000,
+      rateLimit: 5,
+    });
+  }
   
   return transporter;
 };
@@ -39,7 +54,7 @@ export const sendOTPEmail = async (email, otp) => {
     const transporter = createTransporter();
     
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
       to: email,
       subject: 'CampusZon - Email Verification OTP',
       html: `
@@ -86,7 +101,7 @@ export const sendWelcomeEmail = async (email, username) => {
     const transporter = createTransporter();
     
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
       to: email,
       subject: 'Welcome to CampusZon! 🎉',
       html: `

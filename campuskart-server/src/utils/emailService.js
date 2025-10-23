@@ -1,21 +1,25 @@
 import nodemailer from 'nodemailer';
 
-// Create transporter for sending emails
+// Create a persistent transporter (reuse connection)
+let transporter = null;
+
 const createTransporter = () => {
-  // For development, you can use Gmail or any SMTP service
-  // For Gmail: Enable "Less secure app access" or use App Password
-  const transporter = nodemailer.default ? nodemailer.default.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL_USER, // Your Gmail address
-      pass: process.env.EMAIL_PASS, // Your Gmail password or App Password
-    },
-  }) : nodemailer.createTransport({
+  if (transporter) {
+    return transporter;
+  }
+  
+  // Create transporter with connection pooling for better performance
+  transporter = (nodemailer.default || nodemailer).createTransport({
     service: 'gmail',
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
+    pool: true, // Use connection pooling
+    maxConnections: 5, // Max concurrent connections
+    maxMessages: 100, // Max messages per connection
+    rateDelta: 1000, // Throttle to 1 second between messages
+    rateLimit: 5, // Max 5 messages per rateDelta
   });
   
   return transporter;
@@ -54,7 +58,17 @@ export const sendOTPEmail = async (email, otp) => {
       `,
     };
 
-    const result = await transporter.sendMail(mailOptions);
+    // Set a timeout to prevent hanging
+    const sendEmailWithTimeout = () => {
+      return Promise.race([
+        transporter.sendMail(mailOptions),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Email sending timeout after 15 seconds')), 15000)
+        )
+      ]);
+    };
+
+    const result = await sendEmailWithTimeout();
     console.log('✅ Email sent successfully:', result.messageId);
     return { success: true };
   } catch (error) {

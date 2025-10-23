@@ -185,20 +185,23 @@ export const sendOTP = async (req, res) => {
     // Save OTP to database
     await OTP.create({ email, otp });
 
-    // Send OTP via email
-    const emailResult = await sendOTPEmail(email, otp);
-
-    if (!emailResult.success) {
-      return res.status(500).json({
-        success: false,
-        message: 'Failed to send OTP email. Please try again.',
-      });
-    }
-
+    // Send response immediately
     res.status(200).json({
       success: true,
       message: 'OTP sent successfully to your email',
     });
+
+    // Send OTP via email in background (don't await)
+    sendOTPEmail(email, otp).then(emailResult => {
+      if (emailResult.success) {
+        console.log('✅ OTP email sent to:', email);
+      } else {
+        console.error('❌ Failed to send OTP email to:', email, emailResult.error);
+      }
+    }).catch(err => {
+      console.error('❌ Error sending OTP email:', err);
+    });
+
   } catch (error) {
     console.error('Send OTP error:', error);
     res.status(500).json({

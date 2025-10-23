@@ -190,21 +190,3 @@ export const sendWelcomeEmail = async (email, username) => {
     return { success: false, error: error.message };
   }
 };
-          
-          <p style="font-size: 14px; color: #666;">If you have any questions or need help, feel free to reach out to us.</p>
-          
-          <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;">
-          <p style="font-size: 12px; color: #999; text-align: center;">CampusZon - Your Campus Marketplace</p>
-          <p style="font-size: 11px; color: #999; text-align: center;">This email was sent because you successfully signed up for CampusZon.</p>
-        </div>
-      `,
-    };
-
-    const result = await transporter.sendMail(mailOptions);
-    console.log('✅ Welcome email sent successfully:', result.messageId);
-    return { success: true };
-  } catch (error) {
-    console.error('❌ Error sending welcome email:', error.message);
-    return { success: false, error: error.message };
-  }
-};

@@ -27,8 +27,8 @@ export default function ProductCard({ item }: ProductCardProps) {
   const [bookingMessage, setBookingMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Prepend backend URL to image path
-  const imageUrl = item.imageUrl ? `http://localhost:5000${item.imageUrl}` : '/placeholder.jpg';
+  // Use imageUrl directly (it's either a full ImgBB URL or null)
+  const imageUrl = item.imageUrl || '/placeholder.jpg';
 
   const handleChatClick = async (e: React.MouseEvent) => {
     e.preventDefault();

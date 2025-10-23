@@ -146,10 +146,10 @@ export default function ItemDetail() {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden max-w-5xl mx-auto transition-colors duration-300">
           <div className="md:flex">
             {/* Image Section */}
-            <div className="md:w-1/2 bg-gray-100 dark:bg-gray-700 flex items-center justify-center p-8 transition-colors duration-300">
+            <div className="md:w-1/2 bg-gray-100 dark:bg-gray-700 flex items-center justify-center p-8">
               {item.imageUrl ? (
                 <img
-                  src={`http://localhost:5000${item.imageUrl}`}
+                  src={item.imageUrl}
                   alt={item.title}
                   className="w-full h-auto max-h-96 object-contain rounded-lg"
                 />

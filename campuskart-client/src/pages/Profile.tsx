@@ -226,7 +226,7 @@ export default function Profile() {
                     <div className="w-24 h-24 flex-shrink-0">
                       {item.imageUrl ? (
                         <img
-                          src={`http://localhost:5000${item.imageUrl}`}
+                          src={item.imageUrl}
                           alt={item.title}
                           className="w-full h-full object-cover rounded-md"
                         />

@@ -8,8 +8,21 @@ const createTransporter = () => {
     return transporter;
   }
   
-  // Check if using SendGrid (for production on Render)
-  if (process.env.SENDGRID_API_KEY) {
+  // Check if using Resend (recommended for production - 3000 emails/month free)
+  if (process.env.RESEND_API_KEY) {
+    console.log('📧 Using Resend for email delivery');
+    transporter = (nodemailer.default || nodemailer).createTransport({
+      host: 'smtp.resend.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: 'resend',
+        pass: process.env.RESEND_API_KEY,
+      },
+    });
+  }
+  // Check if using SendGrid (alternative)
+  else if (process.env.SENDGRID_API_KEY) {
     console.log('📧 Using SendGrid for email delivery');
     transporter = (nodemailer.default || nodemailer).createTransport({
       host: 'smtp.sendgrid.net',
@@ -20,7 +33,21 @@ const createTransporter = () => {
         pass: process.env.SENDGRID_API_KEY,
       },
     });
-  } else {
+  }
+  // Check if using Brevo/Sendinblue (another alternative - 300 emails/day)
+  else if (process.env.BREVO_API_KEY) {
+    console.log('📧 Using Brevo for email delivery');
+    transporter = (nodemailer.default || nodemailer).createTransport({
+      host: 'smtp-relay.brevo.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.BREVO_EMAIL,
+        pass: process.env.BREVO_API_KEY,
+      },
+    });
+  }
+  else {
     // Use Gmail for local development
     console.log('📧 Using Gmail for email delivery');
     transporter = (nodemailer.default || nodemailer).createTransport({

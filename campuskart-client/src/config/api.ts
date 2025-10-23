@@ -5,8 +5,10 @@ export const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5
 // API Endpoints
 export const API_ENDPOINTS = {
   // Auth
-  login: `${API_URL}/api/auth/login`,
-  signup: `${API_URL}/api/auth/signup`,
+  login: `${API_URL}/api/user/login`,
+  signup: `${API_URL}/api/user/signup`,
+  sendOTP: `${API_URL}/api/user/send-otp`,
+  verifyOTP: `${API_URL}/api/user/verify-otp`,
   googleAuth: `${API_URL}/api/auth/google`,
   
   // Items

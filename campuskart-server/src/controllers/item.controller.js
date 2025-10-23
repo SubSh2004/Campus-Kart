@@ -1,4 +1,5 @@
 import { getSequelize, getItemModel } from '../db/postgres.js';
+import imgbbUploader from 'imgbb-uploader';
 
 // Create a new item
 export const createItem = async (req, res) => {
@@ -46,10 +47,28 @@ export const createItem = async (req, res) => {
       });
     }
 
-    // Get image path from multer
+    // Upload image to ImgBB if present
     let imageUrl = null;
     if (req.file) {
-      imageUrl = `/images/${req.file.filename}`;
+      try {
+        // Convert buffer to base64
+        const base64Image = req.file.buffer.toString('base64');
+        
+        // Upload to ImgBB
+        const response = await imgbbUploader({
+          apiKey: process.env.IMGBB_API_KEY,
+          base64string: base64Image,
+          name: `${Date.now()}-${req.file.originalname}`,
+        });
+        
+        imageUrl = response.url; // Get the permanent cloud URL
+      } catch (uploadError) {
+        console.error('ImgBB upload error:', uploadError);
+        return res.status(500).json({
+          success: false,
+          message: 'Failed to upload image',
+        });
+      }
     }
 
     // Get Item model

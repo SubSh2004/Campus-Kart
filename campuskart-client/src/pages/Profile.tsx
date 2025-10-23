@@ -1,0 +1,426 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useRecoilValue } from 'recoil';
+import axios from 'axios';
+import { userAtom } from '../store/user.atom';
+
+interface Item {
+  id: number;
+  title: string;
+  description: string;
+  price: number;
+  category: string;
+  imageUrl: string;
+  available: boolean;
+  createdAt: string;
+}
+
+export default function Profile() {
+  const user = useRecoilValue(userAtom);
+  const navigate = useNavigate();
+  const [myItems, setMyItems] = useState<Item[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editingItem, setEditingItem] = useState<Item | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  // Form state for editing
+  const [editForm, setEditForm] = useState({
+    title: '',
+    description: '',
+    price: '',
+    category: '',
+    available: true,
+  });
+
+  const [updateMessage, setUpdateMessage] = useState('');
+  const [updateError, setUpdateError] = useState('');
+
+  useEffect(() => {
+    if (!user.isLoggedIn) {
+      navigate('/login');
+      return;
+    }
+    fetchMyItems();
+  }, [user.isLoggedIn, navigate]);
+
+  const fetchMyItems = async () => {
+    try {
+      setLoading(true);
+      const emailDomain = user.email?.split('@')[1] || '';
+      const response = await axios.get(`/api/items?emailDomain=${emailDomain}`);
+      
+      if (response.data.success) {
+        // Filter to show only current user's items
+        const userItems = response.data.items.filter(
+          (item: Item & { userId: string }) => item.userId === user.userId
+        );
+        setMyItems(userItems);
+      }
+    } catch (error) {
+      console.error('Error fetching items:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditClick = (item: Item) => {
+    setEditingItem(item);
+    setEditForm({
+      title: item.title,
+      description: item.description,
+      price: item.price.toString(),
+      category: item.category,
+      available: item.available,
+    });
+    setShowEditModal(true);
+    setUpdateMessage('');
+    setUpdateError('');
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingItem) return;
+
+    try {
+      setUpdateError('');
+      setUpdateMessage('');
+
+      const response = await axios.put(`/api/items/${editingItem.id}`, {
+        title: editForm.title,
+        description: editForm.description,
+        price: parseFloat(editForm.price),
+        category: editForm.category,
+        available: editForm.available,
+      });
+
+      if (response.data.success) {
+        setUpdateMessage('Item updated successfully!');
+        setTimeout(() => {
+          setShowEditModal(false);
+          fetchMyItems();
+        }, 1500);
+      }
+    } catch (error: any) {
+      setUpdateError(error.response?.data?.message || 'Failed to update item');
+    }
+  };
+
+  const handleDeleteItem = async (itemId: number) => {
+    if (!window.confirm('Are you sure you want to delete this item?')) {
+      return;
+    }
+
+    try {
+      const response = await axios.delete(`/api/items/${itemId}`);
+      if (response.data.success) {
+        fetchMyItems();
+      }
+    } catch (error) {
+      console.error('Error deleting item:', error);
+    }
+  };
+
+  const toggleAvailability = async (item: Item) => {
+    try {
+      const response = await axios.put(`/api/items/${item.id}`, {
+        available: !item.available,
+      });
+
+      if (response.data.success) {
+        fetchMyItems();
+      }
+    } catch (error) {
+      console.error('Error updating availability:', error);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+      {/* Header */}
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700">
+        <div className="container mx-auto px-4 py-4">
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Home
+          </button>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-8 max-w-6xl">
+        {/* User Info Section */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8 dark:border dark:border-gray-700">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">My Profile</h1>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">Personal Information</h2>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Username</p>
+                  <p className="font-medium text-gray-900 dark:text-gray-100">{user.username}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
+                  <p className="font-medium text-gray-900 dark:text-gray-100">{user.email}</p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">Contact Details</h2>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Phone Number</p>
+                  <p className="font-medium text-gray-900 dark:text-gray-100">{user.phoneNumber}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Hostel</p>
+                  <p className="font-medium text-gray-900 dark:text-gray-100">{user.hostelName}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* My Items Section */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 dark:border dark:border-gray-700">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">My Listed Items</h2>
+            <button
+              onClick={() => navigate('/add-item')}
+              className="bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 transition"
+            >
+              + Add New Item
+            </button>
+          </div>
+
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 dark:border-indigo-400 mx-auto"></div>
+            </div>
+          ) : myItems.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500 dark:text-gray-400 text-lg">You haven't listed any items yet.</p>
+              <button
+                onClick={() => navigate('/add-item')}
+                className="mt-4 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
+              >
+                List your first item →
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {myItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition bg-white dark:bg-gray-800"
+                >
+                  <div className="flex gap-4">
+                    {/* Image */}
+                    <div className="w-24 h-24 flex-shrink-0">
+                      {item.imageUrl ? (
+                        <img
+                          src={`http://localhost:5000${item.imageUrl}`}
+                          alt={item.title}
+                          className="w-full h-full object-cover rounded-md"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-200 rounded-md flex items-center justify-center">
+                          <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Item Details */}
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{item.title}</h3>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{item.category}</p>
+                          <p className="text-gray-600 dark:text-gray-300 text-sm mt-2 line-clamp-2">{item.description}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xl font-bold text-indigo-600 dark:text-indigo-400">₹{parseFloat(item.price.toString()).toFixed(2)}</p>
+                          <span className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold ${
+                            item.available 
+                              ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' 
+                              : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400'
+                          }`}>
+                            {item.available ? 'Available' : 'Sold/Unavailable'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-2 mt-4">
+                        <button
+                          onClick={() => handleEditClick(item)}
+                          className="px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50 transition text-sm font-medium"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => toggleAvailability(item)}
+                          className={`px-3 py-1 rounded-md transition text-sm font-medium ${
+                            item.available
+                              ? 'bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-900/50'
+                              : 'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/50'
+                          }`}
+                        >
+                          Mark as {item.available ? 'Unavailable' : 'Available'}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteItem(item.id)}
+                          className="px-3 py-1 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-md hover:bg-red-100 dark:hover:bg-red-900/50 transition text-sm font-medium"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+
+      {/* Edit Modal */}
+      {showEditModal && editingItem && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto dark:border dark:border-gray-700">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Edit Item</h2>
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {updateMessage && (
+                <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-md">
+                  {updateMessage}
+                </div>
+              )}
+
+              {updateError && (
+                <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-md">
+                  {updateError}
+                </div>
+              )}
+
+              <form onSubmit={handleEditSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Title
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editForm.title}
+                    onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                    className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    required
+                    rows={4}
+                    value={editForm.description}
+                    onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                    className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Price (₹)
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min="0"
+                      step="0.01"
+                      value={editForm.price}
+                      onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
+                      className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Category
+                    </label>
+                    <select
+                      required
+                      value={editForm.category}
+                      onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+                      className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    >
+                      <option value="">Select category</option>
+                      <option value="Electronics">Electronics</option>
+                      <option value="Books">Books</option>
+                      <option value="Furniture">Furniture</option>
+                      <option value="Clothing">Clothing</option>
+                      <option value="Sports">Sports</option>
+                      <option value="For Sale">For Sale</option>
+                      <option value="For Rent">For Rent</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="available"
+                    checked={editForm.available}
+                    onChange={(e) => setEditForm({ ...editForm, available: e.target.checked })}
+                    className="w-4 h-4 text-indigo-600 border-gray-300 dark:border-gray-600 rounded focus:ring-indigo-500"
+                  />
+                  <label htmlFor="available" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                    Item is available for sale
+                  </label>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="submit"
+                    className="flex-1 bg-indigo-600 dark:bg-indigo-500 text-white py-2 px-4 rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 transition font-medium"
+                  >
+                    Save Changes
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowEditModal(false)}
+                    className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2 px-4 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition font-medium"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

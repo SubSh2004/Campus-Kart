@@ -23,8 +23,8 @@ export const connectPostgresDB = async () => {
     // Initialize the Item model
     ItemModel = defineItemModel(sequelize);
     
-    // Sync all models with database (force: true will drop and recreate tables)
-    await sequelize.sync({ force: true });
+    // Sync models with database (alter: true will update schema without dropping data)
+    await sequelize.sync({ alter: true });
     console.log('✅ Database tables synchronized');
     
     return sequelize;

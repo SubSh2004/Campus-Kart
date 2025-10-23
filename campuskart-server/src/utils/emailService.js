@@ -31,6 +31,41 @@ const sendWithResendAPI = async (to, subject, html) => {
   }
 };
 
+// Send email using Brevo HTTP API (no SMTP needed - works on Render!)
+const sendWithBrevoAPI = async (to, subject, html) => {
+  try {
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'api-key': process.env.BREVO_API_KEY
+      },
+      body: JSON.stringify({
+        sender: {
+          name: 'CampusZon',
+          email: process.env.EMAIL_FROM || 'campuszon@gmail.com'
+        },
+        to: [{ email: to }],
+        subject: subject,
+        htmlContent: html,
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Brevo API error: ${error}`);
+    }
+
+    const data = await response.json();
+    console.log('✅ Email sent via Brevo HTTP API:', data.messageId);
+    return { success: true, messageId: data.messageId };
+  } catch (error) {
+    console.error('❌ Brevo HTTP API error:', error.message);
+    throw error;
+  }
+};
+
 // Create a persistent transporter (reuse connection)
 let transporter = null;
 
@@ -110,7 +145,14 @@ export const sendOTPEmail = async (email, otp) => {
       </div>
     `;
 
-    // Use Resend HTTP API if available (works on Render free tier!)
+    // Use Brevo HTTP API if available (works on Render free tier!)
+    if (process.env.BREVO_API_KEY) {
+      console.log('📧 Using Brevo HTTP API for email delivery');
+      const result = await sendWithBrevoAPI(email, 'CampusZon - Email Verification OTP', htmlContent);
+      return { success: true };
+    }
+    
+    // Use Resend HTTP API if available
     if (process.env.RESEND_API_KEY) {
       console.log('📧 Using Resend HTTP API for email delivery');
       const result = await sendWithResendAPI(email, 'CampusZon - Email Verification OTP', htmlContent);
@@ -165,6 +207,13 @@ export const sendWelcomeEmail = async (email, username) => {
         <p style="font-size: 12px; color: #999; text-align: center;">CampusZon - Your Campus Marketplace</p>
       </div>
     `;
+
+    // Use Brevo HTTP API if available (works on Render free tier!)
+    if (process.env.BREVO_API_KEY) {
+      console.log('📧 Using Brevo HTTP API for welcome email');
+      await sendWithBrevoAPI(email, 'Welcome to CampusZon! 🎉', htmlContent);
+      return { success: true };
+    }
 
     // Use Resend HTTP API if available
     if (process.env.RESEND_API_KEY) {

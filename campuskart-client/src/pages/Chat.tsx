@@ -41,6 +41,7 @@ export default function Chat() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [messageInput, setMessageInput] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [isConnected, setIsConnected] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string>('');
   const [view, setView] = useState<'chats' | 'users'>('chats');
@@ -113,9 +114,9 @@ export default function Chat() {
     }
   }, [location.state, chats]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (search = '') => {
     try {
-      const response = await axios.get('/api/chat/users');
+      const response = await axios.get(`/api/chat/users?search=${encodeURIComponent(search)}`);
       if (response.data.success) {
         setUsers(response.data.users);
       }
@@ -123,6 +124,17 @@ export default function Chat() {
       console.error('Error fetching users:', error);
     }
   };
+
+  // Search users when search query changes
+  useEffect(() => {
+    if (view === 'users') {
+      const timer = setTimeout(() => {
+        fetchUsers(searchQuery);
+      }, 300); // Debounce 300ms
+      
+      return () => clearTimeout(timer);
+    }
+  }, [searchQuery, view]);
 
   const fetchChats = async () => {
     try {
@@ -251,6 +263,38 @@ export default function Chat() {
                   Users
                 </button>
               </div>
+
+              {/* Search Input (only for Users view) */}
+              {view === 'users' && (
+                <div className={`p-3 border-b ${theme === 'dark' ? 'border-gray-600 bg-gray-700' : 'border-gray-200 bg-white'}`}>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search users by name..."
+                      className={`w-full px-4 py-2 pl-10 rounded-lg ${
+                        theme === 'dark'
+                          ? 'bg-gray-600 text-white placeholder-gray-400 border-gray-500'
+                          : 'bg-gray-100 text-gray-900 placeholder-gray-500 border-gray-300'
+                      } border focus:outline-none focus:ring-2 focus:ring-indigo-500`}
+                    />
+                    <svg
+                      className={`absolute left-3 top-2.5 w-5 h-5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              )}
 
               {/* List */}
               <div className="flex-1 overflow-y-auto">

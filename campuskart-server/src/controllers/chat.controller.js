@@ -2,26 +2,65 @@ import Chat from '../models/chat.model.js';
 import Message from '../models/message.model.js';
 import User from '../models/user.model.js';
 
-// Get all users for chat list (excluding current user)
+// Get all users for chat list (excluding current user, same domain only)
 export const getUsers = async (req, res) => {
   try {
     const currentUserId = req.user._id.toString();
-    const users = await User.find({ _id: { $ne: currentUserId } })
-      .select('username email hostelName')
-      .sort({ username: 1 });
+    const currentUserEmail = req.user.email;
+    const searchQuery = req.query.search || '';
     
-    res.json({ success: true, users });
+    // Extract domain from current user's email
+    const currentDomain = currentUserEmail.split('@')[1];
+    
+    // Build query: same domain, not current user, optional search
+    const query = {
+      _id: { $ne: currentUserId },
+      email: { $regex: `@${currentDomain}$`, $options: 'i' } // Same domain
+    };
+    
+    // Add search filter if provided
+    if (searchQuery) {
+      query.$or = [
+        { username: { $regex: searchQuery, $options: 'i' } },
+        { email: { $regex: searchQuery, $options: 'i' } }
+      ];
+    }
+    
+    const users = await User.find(query)
+      .select('username email hostelName phoneNumber')
+      .sort({ username: 1 })
+      .limit(50); // Limit to 50 results
+    
+    res.json({ success: true, users, domain: currentDomain });
   } catch (error) {
     console.error('Error fetching users:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch users' });
   }
 };
 
-// Get or create chat between two users
+// Get or create chat between two users (same domain only)
 export const getOrCreateChat = async (req, res) => {
   try {
     const { receiverId } = req.params;
     const senderId = req.user._id.toString();
+    const currentUserEmail = req.user.email;
+
+    // Get receiver's email
+    const receiver = await User.findById(receiverId).select('email');
+    if (!receiver) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Check if both users are from same domain
+    const senderDomain = currentUserEmail.split('@')[1];
+    const receiverDomain = receiver.email.split('@')[1];
+    
+    if (senderDomain !== receiverDomain) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'You can only chat with users from your college' 
+      });
+    }
 
     // Find existing chat
     let chat = await Chat.findOne({

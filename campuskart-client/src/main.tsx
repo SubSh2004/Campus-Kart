@@ -5,6 +5,7 @@ import { RecoilRoot } from 'recoil'
 import { ThemeProvider } from './context/ThemeContext'
 import App from './App'
 import './index.css'
+import './config/axios' // Configure axios before anything else
 
 createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>

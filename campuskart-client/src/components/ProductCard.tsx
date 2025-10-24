@@ -125,28 +125,23 @@ export default function ProductCard({ item }: ProductCardProps) {
   return (
     <>
       <Link to={`/item/${item.id}`} className="block group">
-        <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transition-all duration-500 hover:shadow-2xl sm:hover:-translate-y-2 dark:border dark:border-gray-700 hover:border-indigo-400 dark:hover:border-indigo-500 animate-fade-in">
-          {/* Gradient Overlay on Hover */}
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/0 via-purple-500/0 to-pink-500/0 group-hover:from-indigo-500/5 group-hover:via-purple-500/5 group-hover:to-pink-500/5 transition-all duration-500 z-10 pointer-events-none"></div>
+        <div className="relative bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 overflow-hidden transition-all duration-200 hover:shadow-lg hover:border-gray-300 dark:hover:border-slate-700">
           
-          <div className="aspect-w-16 aspect-h-12 bg-gradient-to-br from-gray-200 via-indigo-100 to-purple-100 dark:from-gray-700 dark:via-indigo-900 dark:to-purple-900 relative overflow-hidden">
+          <div className="aspect-w-16 aspect-h-12 bg-gray-100 dark:bg-slate-800 relative overflow-hidden">
             <img
               src={imageUrl}
               alt={item.title}
-              className="w-full h-40 sm:h-48 object-cover group-hover:scale-110 group-hover:rotate-1 transition-all duration-500"
+              className="w-full h-40 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-300"
               onError={(e) => {
                 (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=No+Image';
               }}
             />
-            {/* Shimmer Effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
             
-            {/* Availability Badge with Glow */}
+            {/* Availability Badge */}
             <div className="absolute top-3 right-3 z-20">
               {item.available ? (
-                <span className="relative bg-gradient-to-r from-green-400 to-emerald-500 text-white text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-lg animate-pulse-subtle">
-                  <span className="absolute inset-0 bg-green-400 rounded-full blur-md opacity-50"></span>
-                  <span className="relative">✓ Available</span>
+                <span className="bg-green-600 text-white text-xs font-semibold px-2 sm:px-3 py-1 rounded shadow-sm">
+                  Available
                 </span>
               ) : (
                 <span className="relative bg-gradient-to-r from-red-400 to-rose-500 text-white text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-lg">

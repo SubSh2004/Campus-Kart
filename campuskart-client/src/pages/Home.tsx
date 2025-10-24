@@ -35,9 +35,17 @@ export default function Home() {
       {user.isLoggedIn && organizationName && (
         <div className="bg-gradient-to-r from-slate-900 to-slate-800 dark:from-slate-950 dark:to-slate-900 border-b border-slate-700">
           <div className="container mx-auto px-4 py-3">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-center text-center">
               <div>
                 <p className="text-sm font-semibold text-white">
+                  {organizationName} Marketplace
+                </p>
+                <p className="text-xs text-slate-300 mt-0.5">Connect, buy, and sell within your campus community</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
                   {organizationName} Marketplace
                 </p>
                 <p className="text-xs text-slate-300 mt-0.5">Connect, buy, and sell within your campus community</p>

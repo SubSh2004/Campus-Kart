@@ -46,14 +46,6 @@ export default function Home() {
           </div>
         </div>
       )}
-                  {organizationName} Marketplace
-                </p>
-                <p className="text-xs text-slate-300 mt-0.5">Connect, buy, and sell within your campus community</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Clean Professional Header */}
       <header className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 sticky top-0 z-50 shadow-sm">

@@ -163,6 +163,14 @@ export default function ProductCard({ item }: ProductCardProps) {
             <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-1 line-clamp-1 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-indigo-600 group-hover:to-purple-600 dark:group-hover:from-indigo-400 dark:group-hover:to-purple-400 transition-all duration-300">
               {item.title}
             </h3>
+            
+            {/* Category Badge in Card Content */}
+            <div className="mb-2">
+              <span className="inline-block bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800">
+                📂 {item.category}
+              </span>
+            </div>
+            
             <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
               {item.description}
             </p>

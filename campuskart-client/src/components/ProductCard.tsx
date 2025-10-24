@@ -1,6 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import axios from 'axios';
+import { useRecoilValue } from 'recoil';
+import { userAtom } from '../store/user.atom';
 import { API_URL } from '../config/api';
 
 interface Item {
@@ -24,12 +26,16 @@ interface ProductCardProps {
 
 export default function ProductCard({ item }: ProductCardProps) {
   const navigate = useNavigate();
+  const currentUser = useRecoilValue(userAtom);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [bookingMessage, setBookingMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Use imageUrl directly (it's either a full ImgBB URL or null)
   const imageUrl = item.imageUrl || '/placeholder.jpg';
+  
+  // Check if current user uploaded this item
+  const isOwnItem = currentUser?.email === item.userEmail;
 
   const handleChatClick = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -127,6 +133,13 @@ export default function ProductCard({ item }: ProductCardProps) {
     <>
       <Link to={`/item/${item.id}`} className="block group">
         <div className="relative bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 overflow-hidden transition-all duration-200 hover:shadow-lg hover:border-gray-300 dark:hover:border-slate-700">
+          
+          {/* "Uploaded by you" badge above image */}
+          {isOwnItem && (
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-semibold px-3 py-1.5 text-center">
+              ✨ Uploaded by you
+            </div>
+          )}
           
           <div className="aspect-w-16 aspect-h-12 bg-gray-100 dark:bg-slate-800 relative overflow-hidden">
             <img

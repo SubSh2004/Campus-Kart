@@ -140,7 +140,7 @@ export default function ItemDetail() {
             Back to Home
           </button>
           <div className="flex items-center gap-2">
-            <img src="/logo-icon.svg" alt="CampusZon" className="w-8 h-8" />
+            <img src="/logo-icon.jpg" alt="CampusZon" className="w-8 h-8 rounded-full object-cover" />
             <span className="text-lg font-bold text-gray-900 dark:text-white">Item Details</span>
           </div>
           <div className="w-28"></div> {/* Spacer for centering */}

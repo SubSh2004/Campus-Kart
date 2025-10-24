@@ -40,9 +40,9 @@ export default function Login() {
         <div className="text-center mb-8">
           <div className="inline-block">
             <img 
-              src="/logo.svg" 
+              src="/logo.jpg" 
               alt="CampusZon Logo" 
-              className="w-48 sm:w-56 mx-auto mb-4"
+              className="w-64 sm:w-72 mx-auto mb-4 rounded-lg shadow-lg"
             />
             <div className="h-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 rounded-full"></div>
           </div>

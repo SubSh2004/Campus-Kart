@@ -113,9 +113,9 @@ export default function Signup() {
         <div className="text-center mb-6">
           <div className="inline-block">
             <img 
-              src="/logo.svg" 
+              src="/logo.jpg" 
               alt="CampusZon Logo" 
-              className="w-48 sm:w-56 mx-auto mb-4"
+              className="w-64 sm:w-72 mx-auto mb-4 rounded-lg shadow-lg"
             />
             <div className="h-1 bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 dark:from-purple-400 dark:via-pink-400 dark:to-indigo-400 rounded-full"></div>
           </div>

@@ -258,7 +258,7 @@ export default function Chat() {
             Back to Home
           </button>
           <div className="flex items-center gap-2">
-            <img src="/logo-icon.svg" alt="CampusZon" className="w-8 h-8" />
+            <img src="/logo-icon.jpg" alt="CampusZon" className="w-8 h-8 rounded-full object-cover" />
             <h1 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Messages</h1>
           </div>
           <div className={`text-sm ${isConnected ? 'text-green-500' : 'text-red-500'}`}>

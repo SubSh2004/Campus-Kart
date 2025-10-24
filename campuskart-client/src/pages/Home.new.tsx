@@ -1,20 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useRecoilValue } from 'recoil';
-import { userAtom } from '../store/user.atom';
-import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../context/ThemeContext';
-import { getOrganizationName } from '../utils/domainMapper';
 import ProductsList from '../components/ProductsList';
 import Notifications from '../components/Notifications';
 
 export default function Home() {
-  const user = useRecoilValue(userAtom);
-  const { logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
-  
-  const organizationName = user.email ? getOrganizationName(user.email) : '';
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

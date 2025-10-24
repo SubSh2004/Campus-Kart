@@ -17,25 +17,30 @@ export default function Home() {
   const organizationName = user.email ? getOrganizationName(user.email) : '';
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-      {/* Organization Welcome Banner */}
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-indigo-950 dark:to-purple-950 transition-colors duration-300">
+      {/* Organization Welcome Banner with Animation */}
       {user.isLoggedIn && organizationName && (
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white dark:from-indigo-700 dark:to-purple-700">
-          <div className="container mx-auto px-4 py-4">
+        <div className="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white dark:from-indigo-700 dark:via-purple-700 dark:to-pink-700 animate-gradient-x">
+          {/* Animated Background Shapes */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute -top-10 -left-10 w-40 h-40 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute top-20 right-10 w-60 h-60 bg-purple-400/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          </div>
+          <div className="container mx-auto px-4 py-5 relative z-10">
             <div className="text-center">
-              <h2 className="text-2xl font-bold">
-                Welcome to CampusZon of {organizationName}
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold animate-fade-in-up bg-clip-text text-transparent bg-gradient-to-r from-white to-indigo-100">
+                ✨ Welcome to CampusZon of {organizationName} ✨
               </h2>
-              <p className="text-indigo-100 text-sm mt-1">
-                Buy and sell items within your campus community
+              <p className="text-indigo-100 text-xs sm:text-sm mt-2 animate-fade-in-up animation-delay-200">
+                🛍️ Buy and sell items within your campus community
               </p>
             </div>
           </div>
         </div>
       )}
 
-      {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700 transition-colors duration-300 sticky top-0 z-50">
+      {/* Glassmorphism Header */}
+      <header className="backdrop-blur-md bg-white/80 dark:bg-gray-800/80 shadow-lg border-b border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 sticky top-0 z-50">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
           {/* Mobile: Stack everything vertically */}
           <div className="flex flex-col gap-3 sm:gap-4">
@@ -135,55 +140,61 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8">
-        {/* Search Bar */}
-        <div className="mb-4 sm:mb-6 md:mb-8">
+        {/* Enhanced Search Bar with Gradient Border */}
+        <div className="mb-4 sm:mb-6 md:mb-8 animate-fade-in-up">
           <div className="max-w-2xl mx-auto">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search for items..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 sm:px-5 py-2.5 sm:py-3 pl-10 sm:pl-12 pr-10 text-sm sm:text-base text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition shadow-sm"
-              />
-              <svg
-                className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 dark:text-gray-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            <div className="relative group">
+              {/* Gradient Border Effect */}
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-xl blur opacity-30 group-hover:opacity-60 transition duration-500"></div>
+              
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="🔍 Search for items (laptop, books, furniture...)"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full px-4 sm:px-5 py-3 sm:py-4 pl-10 sm:pl-12 pr-10 text-sm sm:text-base text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 dark:focus:border-indigo-400 outline-none transition-all duration-300 shadow-lg font-medium placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 />
-              </svg>
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 p-1"
-                  aria-label="Clear search"
+                <svg
+                  className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-indigo-500 dark:text-indigo-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              )}
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-indigo-600 dark:text-gray-500 dark:hover:text-indigo-400 p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-200"
+                    aria-label="Clear search"
+                  >
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="mb-4 sm:mb-6">
-          <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 dark:text-white">
-            {searchQuery ? `Results for "${searchQuery}"` : 'Available Items'}
+        <div className="mb-4 sm:mb-6 animate-fade-in-up animation-delay-200">
+          <h2 className="text-lg sm:text-xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 mb-2">
+            {searchQuery ? `🔍 Results for "${searchQuery}"` : '🛍️ Available Items'}
           </h2>
           {user.isLoggedIn && organizationName ? (
-            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mt-1">
-              Showing items from <span className="font-semibold text-indigo-600 dark:text-indigo-400">{organizationName}</span> students
+            <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 mt-2 flex items-center gap-2">
+              <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+              Showing items from <span className="font-bold text-indigo-600 dark:text-indigo-400 px-2 py-0.5 bg-indigo-50 dark:bg-indigo-900/30 rounded-md">{organizationName}</span> students
             </p>
           ) : (
-            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mt-1">Login to browse items from your campus</p>
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-2">✨ Login to browse items from your campus</p>
           )}
         </div>
         

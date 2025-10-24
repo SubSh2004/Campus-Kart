@@ -125,73 +125,93 @@ export default function ProductCard({ item }: ProductCardProps) {
   return (
     <>
       <Link to={`/item/${item.id}`} className="block group">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl sm:hover:-translate-y-1 dark:border dark:border-gray-700">
-          <div className="aspect-w-16 aspect-h-12 bg-gray-200 dark:bg-gray-700 relative">
+        <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transition-all duration-500 hover:shadow-2xl sm:hover:-translate-y-2 dark:border dark:border-gray-700 hover:border-indigo-400 dark:hover:border-indigo-500 animate-fade-in">
+          {/* Gradient Overlay on Hover */}
+          <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/0 via-purple-500/0 to-pink-500/0 group-hover:from-indigo-500/5 group-hover:via-purple-500/5 group-hover:to-pink-500/5 transition-all duration-500 z-10 pointer-events-none"></div>
+          
+          <div className="aspect-w-16 aspect-h-12 bg-gradient-to-br from-gray-200 via-indigo-100 to-purple-100 dark:from-gray-700 dark:via-indigo-900 dark:to-purple-900 relative overflow-hidden">
             <img
               src={imageUrl}
               alt={item.title}
-              className="w-full h-40 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+              className="w-full h-40 sm:h-48 object-cover group-hover:scale-110 group-hover:rotate-1 transition-all duration-500"
               onError={(e) => {
                 (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=No+Image';
               }}
             />
-            {/* Availability Badge on Image */}
-            <div className="absolute top-2 right-2">
+            {/* Shimmer Effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
+            
+            {/* Availability Badge with Glow */}
+            <div className="absolute top-3 right-3 z-20">
               {item.available ? (
-                <span className="bg-green-500 text-white text-xs font-semibold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-lg">
-                  Available
+                <span className="relative bg-gradient-to-r from-green-400 to-emerald-500 text-white text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-lg animate-pulse-subtle">
+                  <span className="absolute inset-0 bg-green-400 rounded-full blur-md opacity-50"></span>
+                  <span className="relative">✓ Available</span>
                 </span>
               ) : (
-                <span className="bg-red-500 text-white text-xs font-semibold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-lg">
-                  Sold Out
+                <span className="relative bg-gradient-to-r from-red-400 to-rose-500 text-white text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-lg">
+                  <span className="absolute inset-0 bg-red-400 rounded-full blur-md opacity-50"></span>
+                  <span className="relative">✕ Sold Out</span>
                 </span>
               )}
             </div>
-          </div>
-          <div className="p-3 sm:p-4">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-1 line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-              {item.title}
-            </h3>
-            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-2 line-clamp-2">
-              {item.description}
-            </p>
-            <div className="flex items-center justify-between mt-2 sm:mt-3">
-              <span className="text-xl sm:text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-                ₹{parseFloat(item.price.toString()).toFixed(2)}
-              </span>
-              <span className="text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 px-2 py-1 rounded-full">
+            
+            {/* Category Badge on Image */}
+            <div className="absolute top-3 left-3 z-20">
+              <span className="backdrop-blur-md bg-white/90 dark:bg-gray-800/90 text-indigo-600 dark:text-indigo-400 text-xs font-semibold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-lg border border-indigo-200 dark:border-indigo-700">
                 {item.category}
               </span>
             </div>
+          </div>
+          <div className="p-3 sm:p-4 relative z-20">
+            <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-1 line-clamp-1 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-indigo-600 group-hover:to-purple-600 dark:group-hover:from-indigo-400 dark:group-hover:to-purple-400 transition-all duration-300">
+              {item.title}
+            </h3>
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+              {item.description}
+            </p>
+            
+            {/* Price with Gradient Background */}
+            <div className="flex items-center justify-between mt-2 sm:mt-3 mb-3">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg blur-sm opacity-30 group-hover:opacity-50 transition-opacity"></div>
+                <span className="relative text-xl sm:text-2xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
+                  ₹{parseFloat(item.price.toString()).toFixed(2)}
+                </span>
+              </div>
+            </div>
 
-            {/* Action Buttons */}
+            {/* Action Buttons with Gradients */}
             <div className="flex gap-1.5 sm:gap-2 mt-3 sm:mt-4">
               <button
                 onClick={handleChatClick}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs sm:text-sm font-semibold py-2 px-2 sm:px-3 rounded-lg transition-colors flex items-center justify-center gap-1"
+                className="relative flex-1 group/btn bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 active:from-blue-700 active:to-cyan-700 text-white text-xs sm:text-sm font-bold py-2 px-2 sm:px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-1 overflow-hidden shadow-md hover:shadow-lg"
               >
-                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
-                <span className="hidden sm:inline">Chat</span>
+                <span className="hidden sm:inline relative z-10">Chat</span>
               </button>
               <button
                 onClick={handleBookClick}
-                className="flex-1 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs sm:text-sm font-semibold py-2 px-2 sm:px-3 rounded-lg transition-colors flex items-center justify-center gap-1"
+                className="relative flex-1 group/btn bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 active:from-indigo-700 active:to-purple-700 text-white text-xs sm:text-sm font-bold py-2 px-2 sm:px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-1 overflow-hidden shadow-md hover:shadow-lg"
               >
-                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span className="hidden sm:inline">Book</span>
+                <span className="hidden sm:inline relative z-10">Book</span>
               </button>
               <button
                 onClick={handleContactClick}
-                className="flex-1 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white text-xs sm:text-sm font-semibold py-2 px-2 sm:px-3 rounded-lg transition-colors flex items-center justify-center gap-1"
+                className="relative flex-1 group/btn bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 active:from-green-700 active:to-emerald-700 text-white text-xs sm:text-sm font-bold py-2 px-2 sm:px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-1 overflow-hidden shadow-md hover:shadow-lg"
               >
-                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
-                <span className="hidden sm:inline">Call</span>
+                <span className="hidden sm:inline relative z-10">Call</span>
               </button>
             </div>
           </div>

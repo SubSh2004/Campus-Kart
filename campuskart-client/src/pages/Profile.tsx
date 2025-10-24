@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useRecoilValue } from 'recoil';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 import axios from 'axios';
 import { userAtom } from '../store/user.atom';
 
@@ -17,13 +17,15 @@ interface Item {
 
 export default function Profile() {
   const user = useRecoilValue(userAtom);
+  const setUser = useSetRecoilState(userAtom);
   const navigate = useNavigate();
   const [myItems, setMyItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showEditProfileModal, setShowEditProfileModal] = useState(false);
 
-  // Form state for editing
+  // Form state for editing items
   const [editForm, setEditForm] = useState({
     title: '',
     description: '',
@@ -32,8 +34,17 @@ export default function Profile() {
     available: true,
   });
 
+  // Form state for editing profile
+  const [profileForm, setProfileForm] = useState({
+    username: '',
+    phoneNumber: '',
+    hostelName: '',
+  });
+
   const [updateMessage, setUpdateMessage] = useState('');
   const [updateError, setUpdateError] = useState('');
+  const [profileUpdateMessage, setProfileUpdateMessage] = useState('');
+  const [profileUpdateError, setProfileUpdateError] = useState('');
 
   useEffect(() => {
     if (!user.isLoggedIn) {
@@ -134,6 +145,54 @@ export default function Profile() {
     }
   };
 
+  const handleEditProfileClick = () => {
+    setProfileForm({
+      username: user.username || '',
+      phoneNumber: user.phoneNumber || '',
+      hostelName: user.hostelName || '',
+    });
+    setShowEditProfileModal(true);
+    setProfileUpdateMessage('');
+    setProfileUpdateError('');
+  };
+
+  const handleProfileUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      setProfileUpdateError('');
+      setProfileUpdateMessage('');
+
+      const response = await axios.put('/api/user/profile', {
+        username: profileForm.username,
+        phoneNumber: profileForm.phoneNumber,
+        hostelName: profileForm.hostelName,
+      });
+
+      if (response.data.success) {
+        // Update localStorage
+        localStorage.setItem('username', profileForm.username);
+        localStorage.setItem('phoneNumber', profileForm.phoneNumber);
+        localStorage.setItem('hostelName', profileForm.hostelName);
+
+        // Update Recoil state
+        setUser({
+          ...user,
+          username: profileForm.username,
+          phoneNumber: profileForm.phoneNumber,
+          hostelName: profileForm.hostelName,
+        });
+
+        setProfileUpdateMessage('Profile updated successfully!');
+        setTimeout(() => {
+          setShowEditProfileModal(false);
+        }, 1500);
+      }
+    } catch (error: any) {
+      setProfileUpdateError(error.response?.data?.message || 'Failed to update profile');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       {/* Header */}
@@ -155,7 +214,15 @@ export default function Profile() {
       <main className="container mx-auto px-4 py-8 max-w-6xl">
         {/* User Info Section */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8 dark:border dark:border-gray-700">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">My Profile</h1>
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Profile</h1>
+            <button
+              onClick={handleEditProfileClick}
+              className="bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 transition text-sm font-medium"
+            >
+              Edit Profile
+            </button>
+          </div>
           
           <div className="grid md:grid-cols-2 gap-6">
             <div>
@@ -418,6 +485,84 @@ export default function Profile() {
                 </div>
               </form>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Profile Modal */}
+      {showEditProfileModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6 transition-colors duration-300">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Edit Profile</h2>
+
+            {profileUpdateMessage && (
+              <div className="mb-4 p-3 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200 rounded-md text-sm">
+                {profileUpdateMessage}
+              </div>
+            )}
+
+            {profileUpdateError && (
+              <div className="mb-4 p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded-md text-sm">
+                {profileUpdateError}
+              </div>
+            )}
+
+            <form onSubmit={handleProfileUpdate} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Username
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={profileForm.username}
+                  onChange={(e) => setProfileForm({ ...profileForm, username: e.target.value })}
+                  className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  required
+                  value={profileForm.phoneNumber}
+                  onChange={(e) => setProfileForm({ ...profileForm, phoneNumber: e.target.value })}
+                  className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Hostel Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={profileForm.hostelName}
+                  onChange={(e) => setProfileForm({ ...profileForm, hostelName: e.target.value })}
+                  className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="submit"
+                  className="flex-1 bg-indigo-600 dark:bg-indigo-500 text-white py-2 px-4 rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 transition font-medium"
+                >
+                  Save Changes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowEditProfileModal(false)}
+                  className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2 px-4 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition font-medium"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

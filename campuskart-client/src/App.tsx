@@ -30,36 +30,38 @@ export default function App() {
         // Set axios default authorization header
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         
+        // Restore user state immediately (optimistic)
+        setUser({
+          isLoggedIn: true,
+          email: email,
+          username: username,
+          token: token,
+          phoneNumber: phoneNumber || null,
+          hostelName: hostelName || null,
+          userId: userId || null,
+        });
+        
         try {
-          // Validate token with backend by fetching user profile
-          const response = await axios.get('/api/user/profile');
-          
-          if (response.data.success) {
-            // Token is valid, restore user state
+          // Validate token with backend in the background
+          await axios.get('/api/user/profile');
+          // Token is valid, user state already set
+        } catch (error: any) {
+          // Only clear if it's a 401 (unauthorized) error
+          if (error.response?.status === 401) {
+            console.error('Token expired or invalid');
+            localStorage.clear();
+            delete axios.defaults.headers.common['Authorization'];
             setUser({
-              isLoggedIn: true,
-              email: email,
-              username: username,
-              token: token,
-              phoneNumber: phoneNumber || null,
-              hostelName: hostelName || null,
-              userId: userId || null,
+              isLoggedIn: false,
+              email: null,
+              username: null,
+              token: null,
+              phoneNumber: null,
+              hostelName: null,
+              userId: null,
             });
           }
-        } catch (error) {
-          // Token is invalid or expired, clear storage
-          console.error('Token validation failed:', error);
-          localStorage.clear();
-          delete axios.defaults.headers.common['Authorization'];
-          setUser({
-            isLoggedIn: false,
-            email: null,
-            username: null,
-            token: null,
-            phoneNumber: null,
-            hostelName: null,
-            userId: null,
-          });
+          // For other errors (network issues, server down), keep user logged in
         }
       }
       

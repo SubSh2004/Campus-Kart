@@ -95,17 +95,17 @@ export default function ProductsList({ searchQuery = '' }: ProductsListProps) {
 
   if (filteredItems.length === 0) {
     return (
-      <div className="text-center py-20">
-        <div className="inline-block p-6 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+      <div className="text-center py-12 sm:py-20">
+        <div className="inline-block p-4 sm:p-6 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg mx-3">
           {searchQuery ? (
             <>
-              <p className="text-gray-600 dark:text-gray-300 text-lg">No items found for "{searchQuery}"</p>
-              <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">Try searching with different keywords</p>
+              <p className="text-gray-600 dark:text-gray-300 text-base sm:text-lg">No items found for "{searchQuery}"</p>
+              <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mt-2">Try searching with different keywords</p>
             </>
           ) : (
             <>
-              <p className="text-gray-600 dark:text-gray-300 text-lg">No items available yet.</p>
-              <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">Be the first to list an item!</p>
+              <p className="text-gray-600 dark:text-gray-300 text-base sm:text-lg">No items available yet.</p>
+              <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mt-2">Be the first to list an item!</p>
             </>
           )}
         </div>
@@ -114,7 +114,7 @@ export default function ProductsList({ searchQuery = '' }: ProductsListProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
       {filteredItems.map((item) => (
         <ProductCard key={item.id} item={item} />
       ))}

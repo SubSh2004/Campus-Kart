@@ -21,9 +21,10 @@ interface Item {
 
 interface ProductsListProps {
   searchQuery?: string;
+  selectedCategory?: string;
 }
 
-export default function ProductsList({ searchQuery = '' }: ProductsListProps) {
+export default function ProductsList({ searchQuery = '', selectedCategory = 'All' }: ProductsListProps) {
   const user = useRecoilValue(userAtom);
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
@@ -81,16 +82,26 @@ export default function ProductsList({ searchQuery = '' }: ProductsListProps) {
     );
   }
 
-  // Filter items based on search query
+  // Filter items based on search query and selected category
   const filteredItems = items.filter((item) => {
-    if (!searchQuery) return true;
+    // Filter by search query
+    let matchesSearch = true;
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      matchesSearch = (
+        item.title.toLowerCase().includes(query) ||
+        item.description.toLowerCase().includes(query) ||
+        item.category.toLowerCase().includes(query)
+      );
+    }
     
-    const query = searchQuery.toLowerCase();
-    return (
-      item.title.toLowerCase().includes(query) ||
-      item.description.toLowerCase().includes(query) ||
-      item.category.toLowerCase().includes(query)
-    );
+    // Filter by category
+    let matchesCategory = true;
+    if (selectedCategory && selectedCategory !== 'All') {
+      matchesCategory = item.category === selectedCategory;
+    }
+    
+    return matchesSearch && matchesCategory;
   });
 
   if (filteredItems.length === 0) {
@@ -101,6 +112,11 @@ export default function ProductsList({ searchQuery = '' }: ProductsListProps) {
             <>
               <p className="text-gray-600 dark:text-gray-300 text-base sm:text-lg">No items found for "{searchQuery}"</p>
               <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mt-2">Try searching with different keywords</p>
+            </>
+          ) : selectedCategory && selectedCategory !== 'All' ? (
+            <>
+              <p className="text-gray-600 dark:text-gray-300 text-base sm:text-lg">No items found in {selectedCategory}</p>
+              <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mt-2">Try selecting a different category</p>
             </>
           ) : (
             <>

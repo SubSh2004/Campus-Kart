@@ -13,8 +13,21 @@ export default function Home() {
   const { logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
   
   const organizationName = user.email ? getOrganizationName(user.email) : '';
+
+  const categories = [
+    'All',
+    'Books',
+    'Electronics',
+    'Furniture',
+    'Clothing',
+    'Sports',
+    'For Sale',
+    'For Rent',
+    'Other'
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-950 transition-colors duration-200">
@@ -174,9 +187,35 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Category Filter Tabs */}
+        <div className="mb-6">
+          <div className="max-w-5xl mx-auto">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Filter by Category:</h3>
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={`px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-all ${
+                    selectedCategory === category
+                      ? 'bg-indigo-600 text-white shadow-md'
+                      : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
         <div className="mb-4 sm:mb-6">
           <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            {searchQuery ? `Results for "${searchQuery}"` : 'Available Items'}
+            {searchQuery 
+              ? `Results for "${searchQuery}"` 
+              : selectedCategory === 'All' 
+                ? 'Available Items' 
+                : `${selectedCategory} Items`}
           </h2>
           {user.isLoggedIn && organizationName ? (
             <p className="text-xs sm:text-sm text-gray-600 dark:text-slate-400 mt-1">
@@ -187,7 +226,7 @@ export default function Home() {
           )}
         </div>
         
-        <ProductsList searchQuery={searchQuery} />
+        <ProductsList searchQuery={searchQuery} selectedCategory={selectedCategory} />
       </main>
 
       {/* Clean Footer */}

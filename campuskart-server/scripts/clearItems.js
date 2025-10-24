@@ -1,7 +1,11 @@
 import pg from 'pg';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 const client = new pg.Client({
-  connectionString: 'postgresql://postgres:campuskart321%23@db.vmfguxktshrbbwrdisla.supabase.co:5432/postgres'
+  connectionString: process.env.POSTGRES_URI
 });
 
 try {

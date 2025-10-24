@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import { useTheme } from '../context/ThemeContext';
+import { API_URL, SOCKET_URL } from '../config/api';
 
 interface Booking {
   _id: string;
@@ -46,7 +47,7 @@ export default function Notifications() {
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
     // Initialize socket
-    const newSocket = io('http://localhost:5000');
+    const newSocket = io(SOCKET_URL);
     
     newSocket.on('connect', () => {
       newSocket.emit('userJoin', userId);
@@ -119,7 +120,7 @@ export default function Notifications() {
       
       // Mark booking as read (dismiss notification)
       await axios.put(
-        `http://localhost:5000/api/booking/${booking._id}/read`,
+        `${API_URL}/api/booking/${booking._id}/read`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -135,7 +136,7 @@ export default function Notifications() {
       
       // Create or get chat with the buyer
       const response = await axios.post(
-        'http://localhost:5000/api/chat/chat',
+        `${API_URL}/api/chat/chat`,
         { otherUserId: booking.buyerId },
         { headers: { Authorization: `Bearer ${token}` } }
       );

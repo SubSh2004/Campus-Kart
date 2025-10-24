@@ -16,7 +16,7 @@ router.get(
   (req, res, next) => {
     console.log('📍 OAuth callback received');
     passport.authenticate('google', { 
-      failureRedirect: `${process.env.CLIENT_URL || 'http://localhost:3001'}/login`,
+      failureRedirect: `${process.env.FRONTEND_URL}/login`,
       session: false 
     })(req, res, next);
   },
@@ -26,10 +26,15 @@ router.get(
       
       if (!req.user) {
         console.log('❌ No user found in request');
-        return res.redirect(`${process.env.CLIENT_URL || 'http://localhost:3001'}/login?error=no_user`);
+        return res.redirect(`${process.env.FRONTEND_URL}/login?error=no_user`);
       }
 
       // Generate JWT token
+      if (!process.env.JWT_SECRET) {
+        console.error('❌ JWT_SECRET is not defined');
+        return res.redirect(`${process.env.FRONTEND_URL}/login?error=server_config`);
+      }
+      
       const token = jwt.sign(
         { 
           userId: req.user._id,
@@ -61,11 +66,10 @@ router.get(
       const encodedData = encodeURIComponent(JSON.stringify(userData));
       
       // Redirect to frontend with user data
-      const clientUrl = process.env.CLIENT_URL || 'http://localhost:3001';
-      res.redirect(`${clientUrl}/oauth-callback?data=${encodedData}`);
+      res.redirect(`${process.env.FRONTEND_URL}/oauth-callback?data=${encodedData}`);
     } catch (error) {
       console.error('❌ OAuth callback error:', error);
-      res.redirect(`${process.env.CLIENT_URL || 'http://localhost:3001'}/login?error=oauth_failed`);
+      res.redirect(`${process.env.FRONTEND_URL}/login?error=oauth_failed`);
     }
   }
 );

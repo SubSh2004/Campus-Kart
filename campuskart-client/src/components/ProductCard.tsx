@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import axios from 'axios';
+import { API_URL } from '../config/api';
 
 interface Item {
   id: number;
@@ -49,7 +50,7 @@ export default function ProductCard({ item }: ProductCardProps) {
 
       // Create or get chat with the seller
       const response = await axios.post(
-        'http://localhost:5000/api/chat/chat',
+        `${API_URL}/api/chat/chat`,
         { otherUserId: item.userId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -101,7 +102,7 @@ export default function ProductCard({ item }: ProductCardProps) {
       const token = localStorage.getItem('token');
       
       const response = await axios.post(
-        'http://localhost:5000/api/booking/book',
+        `${API_URL}/api/booking/book`,
         {
           itemId: item.id,
           message: bookingMessage

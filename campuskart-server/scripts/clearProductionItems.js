@@ -1,8 +1,12 @@
 import pg from 'pg';
+import dotenv from 'dotenv';
 
-// PRODUCTION DATABASE - Render PostgreSQL
+// Load environment variables
+dotenv.config();
+
+// PRODUCTION DATABASE - Use environment variable
 const client = new pg.Client({
-  connectionString: 'postgresql://campuskart_db_user:6vhXVa9nVSQPD3MqmYJ1rZNtPW0MZoGg@dpg-ctddtmbtq21c738ps9cg-a.oregon-postgres.render.com/campuskart_db',
+  connectionString: process.env.POSTGRES_URI,
   ssl: {
     rejectUnauthorized: false
   }

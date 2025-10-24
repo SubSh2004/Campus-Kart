@@ -23,9 +23,20 @@ axios.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expired or invalid
-      localStorage.clear();
-      window.location.href = '/login';
+      // Only redirect to login if the request was to a protected route
+      // Skip auto-logout for login/signup attempts
+      const url = error.config?.url || '';
+      const isAuthRoute = url.includes('/login') || url.includes('/signup') || url.includes('/send-otp') || url.includes('/verify-otp');
+      
+      if (!isAuthRoute) {
+        // Token expired or invalid - clear storage and redirect
+        localStorage.clear();
+        // Show a message before redirecting
+        if (!window.location.pathname.includes('/login')) {
+          alert('Your session has expired. Please login again.');
+          window.location.href = '/login';
+        }
+      }
     }
     return Promise.reject(error);
   }

@@ -29,14 +29,14 @@ const allowedOrigins = [
   process.env.FRONTEND_URL
 ].filter(Boolean); // Remove undefined values
 
-// CORS configuration
+// CORS configuration - Secure and explicit
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
-    // Allow all vercel.app domains and allowedOrigins
-    if (origin.includes('vercel.app') || allowedOrigins.includes(origin)) {
+    // Check against allowed origins only (removed insecure vercel.app wildcard)
+    if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
     
@@ -49,9 +49,14 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // Session middleware for Passport
+if (!process.env.JWT_SECRET) {
+  console.error('CRITICAL: JWT_SECRET is not defined. Server cannot start securely.');
+  process.exit(1);
+}
+
 app.use(
   session({
-    secret: process.env.JWT_SECRET || 'your-secret-key',
+    secret: process.env.JWT_SECRET,
     resave: false,
     saveUninitialized: false,
   })

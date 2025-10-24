@@ -7,7 +7,7 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import AddItem from './pages/AddItem'
-import ItemDetail from './pages/ItemDetail'
+import ItemDetail from './ItemDetail'
 import Chat from './pages/Chat'
 import Profile from './pages/Profile'
 import OAuthCallback from './pages/OAuthCallback'
@@ -17,7 +17,7 @@ export default function App() {
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    // Check for stored token on app load
+    // Check for stored token on app load and validate it with backend
     const initAuth = async () => {
       const token = localStorage.getItem('token');
       const username = localStorage.getItem('username');
@@ -30,16 +30,37 @@ export default function App() {
         // Set axios default authorization header
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         
-        // Restore user state
-        setUser({
-          isLoggedIn: true,
-          email: email,
-          username: username,
-          token: token,
-          phoneNumber: phoneNumber || null,
-          hostelName: hostelName || null,
-          userId: userId || null,
-        });
+        try {
+          // Validate token with backend by fetching user profile
+          const response = await axios.get('/api/user/profile');
+          
+          if (response.data.success) {
+            // Token is valid, restore user state
+            setUser({
+              isLoggedIn: true,
+              email: email,
+              username: username,
+              token: token,
+              phoneNumber: phoneNumber || null,
+              hostelName: hostelName || null,
+              userId: userId || null,
+            });
+          }
+        } catch (error) {
+          // Token is invalid or expired, clear storage
+          console.error('Token validation failed:', error);
+          localStorage.clear();
+          delete axios.defaults.headers.common['Authorization'];
+          setUser({
+            isLoggedIn: false,
+            email: null,
+            username: null,
+            token: null,
+            phoneNumber: null,
+            hostelName: null,
+            userId: null,
+          });
+        }
       }
       
       setIsInitialized(true);

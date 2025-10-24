@@ -2,7 +2,6 @@ import { useSetRecoilState } from 'recoil';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { userAtom } from '../store/user.atom';
-import { API_URL } from '../config/api';
 
 interface LoginData {
   email: string;
@@ -36,7 +35,7 @@ export const useAuth = () => {
 
   const login = async (data: LoginData) => {
     try {
-      const response = await axios.post<AuthResponse>(`${API_URL}/api/user/login`, data);
+      const response = await axios.post<AuthResponse>('/api/user/login', data);
       
       if (response.data.success) {
         const { token, user } = response.data;
@@ -78,7 +77,7 @@ export const useAuth = () => {
 
   const signup = async (data: SignupData) => {
     try {
-      const response = await axios.post<AuthResponse>(`${API_URL}/api/user/signup`, data);
+      const response = await axios.post<AuthResponse>('/api/user/signup', data);
       
       if (response.data.success) {
         const { token, user } = response.data;

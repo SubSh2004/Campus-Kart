@@ -3,6 +3,7 @@ import { io, Socket } from 'socket.io-client';
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
+import { SOCKET_URL } from '../config/api';
 
 interface User {
   _id: string;
@@ -72,7 +73,7 @@ export default function Chat() {
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
     // Initialize socket
-    const newSocket = io('http://localhost:5000');
+    const newSocket = io(SOCKET_URL);
 
     newSocket.on('connect', () => {
       console.log('Connected to server');

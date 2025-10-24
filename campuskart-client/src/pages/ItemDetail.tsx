@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from './context/ThemeContext';
 import { io, Socket } from 'socket.io-client';
+import { SOCKET_URL } from './config/api';
 
 interface Item {
   id: number;
@@ -48,7 +49,7 @@ export default function ItemDetail() {
     fetchItem();
 
     // Initialize socket
-    const newSocket = io('http://localhost:5000');
+    const newSocket = io(SOCKET_URL);
     setSocket(newSocket);
 
     return () => {

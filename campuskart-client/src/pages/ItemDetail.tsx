@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { useTheme } from './context/ThemeContext';
+import { useTheme } from '../context/ThemeContext';
 import { io, Socket } from 'socket.io-client';
-import { SOCKET_URL } from './config/api';
+import { SOCKET_URL } from '../config/api';
 
 interface Item {
   id: number;

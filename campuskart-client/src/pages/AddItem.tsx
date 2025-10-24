@@ -113,9 +113,12 @@ export default function AddItem() {
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-teal-100 dark:from-gray-900 dark:to-gray-800 py-12 px-4 transition-colors duration-300">
       <div className="max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 dark:border dark:border-gray-700">
         <div className="mb-8 flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Add New Item</h1>
-            <p className="mt-2 text-gray-600 dark:text-gray-300">List your item for sale on CampusZon</p>
+          <div className="flex items-start gap-3">
+            <img src="/logo-icon.svg" alt="CampusZon" className="w-12 h-12 flex-shrink-0" />
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Add New Item</h1>
+              <p className="mt-2 text-gray-600 dark:text-gray-300">List your item for sale on CampusZon</p>
+            </div>
           </div>
           <button
             onClick={() => navigate(-1)}

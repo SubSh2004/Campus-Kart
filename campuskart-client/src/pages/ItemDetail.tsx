@@ -129,7 +129,7 @@ export default function ItemDetail() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700 transition-colors duration-300">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <button
             onClick={() => navigate('/')}
             className="flex items-center text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition"
@@ -139,6 +139,11 @@ export default function ItemDetail() {
             </svg>
             Back to Home
           </button>
+          <div className="flex items-center gap-2">
+            <img src="/logo-icon.svg" alt="CampusZon" className="w-8 h-8" />
+            <span className="text-lg font-bold text-gray-900 dark:text-white">Item Details</span>
+          </div>
+          <div className="w-28"></div> {/* Spacer for centering */}
         </div>
       </header>
 

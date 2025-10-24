@@ -39,9 +39,11 @@ export default function Login() {
         {/* Logo/Brand Section */}
         <div className="text-center mb-8">
           <div className="inline-block">
-            <h1 className="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 mb-2">
-              CampusZon
-            </h1>
+            <img 
+              src="/logo.svg" 
+              alt="CampusZon Logo" 
+              className="w-48 sm:w-56 mx-auto mb-4"
+            />
             <div className="h-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 rounded-full"></div>
           </div>
         </div>

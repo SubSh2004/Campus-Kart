@@ -257,7 +257,10 @@ export default function Chat() {
             </svg>
             Back to Home
           </button>
-          <h1 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Messages</h1>
+          <div className="flex items-center gap-2">
+            <img src="/logo-icon.svg" alt="CampusZon" className="w-8 h-8" />
+            <h1 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Messages</h1>
+          </div>
           <div className={`text-sm ${isConnected ? 'text-green-500' : 'text-red-500'}`}>
             {isConnected ? '● Online' : '● Offline'}
           </div>

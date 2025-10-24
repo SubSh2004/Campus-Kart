@@ -54,13 +54,20 @@ export default function Home() {
           <div className="flex flex-col gap-3 sm:gap-4">
             {/* Top Row: Logo and Quick Actions */}
             <div className="flex items-center justify-between">
-              <div className="flex-1 min-w-0">
-                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white truncate">CampusZon</h1>
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mt-0.5 truncate">
-                  {user.isLoggedIn && organizationName 
-                    ? `Marketplace for ${organizationName}` 
-                    : 'Campus Marketplace'}
-                </p>
+              <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                <img 
+                  src="/logo-icon.svg" 
+                  alt="CampusZon Logo" 
+                  className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white truncate">CampusZon</h1>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mt-0.5 truncate">
+                    {user.isLoggedIn && organizationName 
+                      ? `Marketplace for ${organizationName}` 
+                      : 'Campus Marketplace'}
+                  </p>
+                </div>
               </div>
               <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
                 {/* Theme Toggle Button */}

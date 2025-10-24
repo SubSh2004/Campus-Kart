@@ -112,9 +112,11 @@ export default function Signup() {
         {/* Logo/Brand Section */}
         <div className="text-center mb-6">
           <div className="inline-block">
-            <h1 className="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 dark:from-purple-400 dark:via-pink-400 dark:to-indigo-400 mb-2">
-              CampusZon
-            </h1>
+            <img 
+              src="/logo.svg" 
+              alt="CampusZon Logo" 
+              className="w-48 sm:w-56 mx-auto mb-4"
+            />
             <div className="h-1 bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 dark:from-purple-400 dark:via-pink-400 dark:to-indigo-400 rounded-full"></div>
           </div>
         </div>

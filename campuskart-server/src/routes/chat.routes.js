@@ -5,7 +5,9 @@ import {
   getMessages,
   sendMessage,
   getUserChats,
-  getUnreadCount
+  getUnreadCount,
+  deleteMessage,
+  deleteConversation
 } from '../controllers/chat.controller.js';
 import { authenticate } from '../middleware/auth.js';
 
@@ -20,5 +22,7 @@ router.get('/chat/:receiverId', getOrCreateChat);
 router.get('/messages/:chatId', getMessages);
 router.post('/message', sendMessage);
 router.get('/unread-count', getUnreadCount);
+router.delete('/message/:messageId', deleteMessage);
+router.delete('/chat/:chatId', deleteConversation);
 
 export default router;

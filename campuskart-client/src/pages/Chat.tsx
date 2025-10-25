@@ -48,6 +48,10 @@ export default function Chat() {
   const [currentUserId, setCurrentUserId] = useState<string>('');
   const [view, setView] = useState<'chats' | 'users'>('chats');
   const [isSending, setIsSending] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; messageId: string; message: Message } | null>(null);
+  const [showDeleteChatModal, setShowDeleteChatModal] = useState(false);
+  const [showUnsendModal, setShowUnsendModal] = useState(false);
+  const [messageToDelete, setMessageToDelete] = useState<Message | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageIdRef = useRef(0);
 
@@ -111,6 +115,26 @@ export default function Chat() {
             : m
         )
       );
+    });
+
+    // Listen for message deletion
+    newSocket.on('messageDeleted', ({ messageId, chatId }: { messageId: string; chatId: string }) => {
+      setMessages(prev => prev.filter(m => m._id !== messageId));
+      if (selectedChat?._id === chatId) {
+        fetchChats(); // Refresh chat list to update last message
+      }
+    });
+
+    // Listen for conversation deletion
+    newSocket.on('conversationDeleted', ({ chatId }: { chatId: string }) => {
+      // Remove chat from list
+      setChats(prev => prev.filter(c => c._id !== chatId));
+      // If this was the selected chat, clear it
+      if (selectedChat?._id === chatId) {
+        setSelectedChat(null);
+        setSelectedUser(null);
+        setMessages([]);
+      }
     });
 
     setSocket(newSocket);
@@ -242,6 +266,89 @@ export default function Chat() {
     setSelectedUser(chat.otherUser);
     fetchMessages(chat._id);
   };
+
+  const handleDeleteMessage = async (messageId: string, receiverId: string) => {
+    try {
+      const response = await axios.delete(`/api/chat/message/${messageId}`);
+      if (response.data.success) {
+        // Remove from local state
+        setMessages(prev => prev.filter(m => m._id !== messageId));
+        
+        // Emit socket event to notify other user
+        socket?.emit('deleteMessage', {
+          messageId,
+          receiverId,
+          chatId: selectedChat?._id
+        });
+        
+        // Refresh chat list to update last message
+        fetchChats();
+      }
+    } catch (error) {
+      console.error('Error deleting message:', error);
+      alert('Failed to delete message');
+    } finally {
+      setContextMenu(null);
+      setShowUnsendModal(false);
+      setMessageToDelete(null);
+    }
+  };
+
+  const handleDeleteForMe = (messageId: string) => {
+    // Just remove from local state (not from database)
+    setMessages(prev => prev.filter(m => m._id !== messageId));
+    setContextMenu(null);
+  };
+
+  const handleDeleteConversation = async () => {
+    if (!selectedChat || !selectedUser) return;
+    
+    try {
+      const response = await axios.delete(`/api/chat/chat/${selectedChat._id}`);
+      if (response.data.success) {
+        // Remove from chats list
+        setChats(prev => prev.filter(c => c._id !== selectedChat._id));
+        
+        // Emit socket event to notify other user
+        socket?.emit('deleteConversation', {
+          chatId: selectedChat._id,
+          otherUserId: selectedUser._id
+        });
+        
+        // Clear selected chat
+        setSelectedChat(null);
+        setSelectedUser(null);
+        setMessages([]);
+      }
+    } catch (error) {
+      console.error('Error deleting conversation:', error);
+      alert('Failed to delete conversation');
+    } finally {
+      setShowDeleteChatModal(false);
+    }
+  };
+
+  const handleMessageRightClick = (e: React.MouseEvent, message: Message) => {
+    e.preventDefault();
+    // Only allow deleting own messages
+    if (message.senderId === currentUserId) {
+      setContextMenu({
+        x: e.clientX,
+        y: e.clientY,
+        messageId: message._id || '',
+        message
+      });
+    }
+  };
+
+  // Close context menu on click outside
+  useEffect(() => {
+    const handleClick = () => setContextMenu(null);
+    if (contextMenu) {
+      document.addEventListener('click', handleClick);
+      return () => document.removeEventListener('click', handleClick);
+    }
+  }, [contextMenu]);
 
   return (
     <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
@@ -407,13 +514,24 @@ export default function Chat() {
               {selectedUser ? (
                 <>
                   {/* Chat Header */}
-                  <div className={`p-4 ${theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'} border-b transition-colors duration-300`}>
-                    <h2 className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                      {selectedUser.username}
-                    </h2>
-                    <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                      {selectedUser.email}
-                    </p>
+                  <div className={`p-4 ${theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'} border-b transition-colors duration-300 flex items-center justify-between`}>
+                    <div>
+                      <h2 className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                        {selectedUser.username}
+                      </h2>
+                      <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                        {selectedUser.email}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setShowDeleteChatModal(true)}
+                      className={`p-2 rounded-lg ${theme === 'dark' ? 'hover:bg-gray-600 text-red-400' : 'hover:bg-gray-200 text-red-600'} transition-colors`}
+                      title="Delete conversation"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
                   </div>
 
                   {/* Messages */}
@@ -430,15 +548,16 @@ export default function Chat() {
                           <div
                             key={msg._id || index}
                             className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} animate-fade-in-up`}
+                            onContextMenu={(e) => handleMessageRightClick(e, msg)}
                           >
                             <div
-                              className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl shadow-sm ${
+                              className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl shadow-sm cursor-pointer ${
                                 isOwnMessage
-                                  ? 'bg-gradient-to-br from-indigo-600 to-indigo-700 text-white rounded-br-md'
+                                  ? 'bg-gradient-to-br from-indigo-600 to-indigo-700 text-white rounded-br-md hover:from-indigo-700 hover:to-indigo-800'
                                   : theme === 'dark'
-                                  ? 'bg-gray-700 text-white rounded-bl-md'
-                                  : 'bg-gray-200 text-gray-900 rounded-bl-md'
-                              } ${isPending ? 'opacity-70' : ''}`}
+                                  ? 'bg-gray-700 text-white rounded-bl-md hover:bg-gray-600'
+                                  : 'bg-gray-200 text-gray-900 rounded-bl-md hover:bg-gray-300'
+                              } ${isPending ? 'opacity-70' : ''} transition-colors duration-150`}
                             >
                               <p className="break-words">{msg.message}</p>
                               <div className="flex items-center justify-end gap-1 mt-1">
@@ -515,6 +634,96 @@ export default function Chat() {
           </div>
         </div>
       </div>
+
+      {/* Context Menu for Messages */}
+      {contextMenu && (
+        <div
+          className={`fixed z-50 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-lg shadow-xl py-1 min-w-[160px]`}
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+        >
+          <button
+            onClick={() => {
+              setMessageToDelete(contextMenu.message);
+              setShowUnsendModal(true);
+            }}
+            className={`w-full px-4 py-2 text-left text-sm ${theme === 'dark' ? 'text-red-400 hover:bg-gray-700' : 'text-red-600 hover:bg-gray-100'} transition-colors flex items-center gap-2`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            Unsend for everyone
+          </button>
+          <button
+            onClick={() => handleDeleteForMe(contextMenu.messageId)}
+            className={`w-full px-4 py-2 text-left text-sm ${theme === 'dark' ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'} transition-colors flex items-center gap-2`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Delete for me
+          </button>
+        </div>
+      )}
+
+      {/* Unsend Confirmation Modal */}
+      {showUnsendModal && messageToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-2xl max-w-md w-full p-6 animate-fade-in`}>
+            <h3 className={`text-xl font-bold mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+              Unsend Message?
+            </h3>
+            <p className={`mb-6 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+              This message will be deleted for everyone in this conversation. This action cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setShowUnsendModal(false);
+                  setMessageToDelete(null);
+                  setContextMenu(null);
+                }}
+                className={`px-4 py-2 rounded-lg ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'} transition-colors font-medium`}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteMessage(messageToDelete._id || '', messageToDelete.receiverId)}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium"
+              >
+                Unsend
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Conversation Modal */}
+      {showDeleteChatModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-2xl max-w-md w-full p-6 animate-fade-in`}>
+            <h3 className={`text-xl font-bold mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+              Delete Conversation?
+            </h3>
+            <p className={`mb-6 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+              This will delete the entire conversation with <span className="font-semibold">{selectedUser?.username}</span> for both of you. All messages will be permanently removed. You can start a fresh chat with them from the Users tab.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowDeleteChatModal(false)}
+                className={`px-4 py-2 rounded-lg ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'} transition-colors font-medium`}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteConversation}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

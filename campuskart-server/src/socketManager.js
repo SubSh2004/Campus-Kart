@@ -95,6 +95,28 @@ export const setupSocketManager = (io) => {
       }
     });
 
+    // Message deleted (unsend)
+    socket.on('deleteMessage', (data) => {
+      const { messageId, receiverId, chatId } = data;
+      
+      // Notify receiver if online
+      const receiverSocketId = userSockets.get(receiverId);
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit('messageDeleted', { messageId, chatId });
+      }
+    });
+
+    // Conversation deleted
+    socket.on('deleteConversation', (data) => {
+      const { chatId, otherUserId } = data;
+      
+      // Notify other user if online
+      const otherSocketId = userSockets.get(otherUserId);
+      if (otherSocketId) {
+        io.to(otherSocketId).emit('conversationDeleted', { chatId });
+      }
+    });
+
     // Handle disconnect
     socket.on('disconnect', () => {
       // Remove user from map

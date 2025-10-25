@@ -185,3 +185,83 @@ export const getUnreadCount = async (req, res) => {
     res.status(500).json({ success: false, message: 'Failed to fetch unread count' });
   }
 };
+
+// Delete message (unsend for everyone)
+export const deleteMessage = async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const userId = req.user._id.toString();
+
+    // Find message
+    const message = await Message.findById(messageId);
+    if (!message) {
+      return res.status(404).json({ success: false, message: 'Message not found' });
+    }
+
+    // Only sender can unsend
+    if (message.senderId !== userId) {
+      return res.status(403).json({ success: false, message: 'You can only unsend your own messages' });
+    }
+
+    // Delete the message
+    await Message.findByIdAndDelete(messageId);
+
+    // Update chat's last message if this was the last message
+    const chat = await Chat.findById(message.chatId);
+    if (chat) {
+      const lastMsg = await Message.findOne({ chatId: message.chatId })
+        .sort({ createdAt: -1 });
+      
+      if (lastMsg) {
+        chat.lastMessage = lastMsg.message;
+        chat.lastMessageTime = lastMsg.createdAt;
+      } else {
+        chat.lastMessage = '';
+        chat.lastMessageTime = new Date();
+      }
+      await chat.save();
+    }
+
+    res.json({ 
+      success: true, 
+      messageId,
+      chatId: message.chatId,
+      receiverId: message.receiverId 
+    });
+  } catch (error) {
+    console.error('Error deleting message:', error);
+    res.status(500).json({ success: false, message: 'Failed to delete message' });
+  }
+};
+
+// Delete entire conversation
+export const deleteConversation = async (req, res) => {
+  try {
+    const { chatId } = req.params;
+    const userId = req.user._id.toString();
+
+    // Find chat
+    const chat = await Chat.findById(chatId);
+    if (!chat) {
+      return res.status(404).json({ success: false, message: 'Chat not found' });
+    }
+
+    // Check if user is participant
+    if (!chat.participants.includes(userId)) {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+
+    // Delete chat and all messages
+    await Message.deleteMany({ chatId });
+    await Chat.findByIdAndDelete(chatId);
+
+    res.json({ 
+      success: true, 
+      chatId,
+      otherUserId: chat.participants.find(id => id !== userId)
+    });
+  } catch (error) {
+    console.error('Error deleting conversation:', error);
+    res.status(500).json({ success: false, message: 'Failed to delete conversation' });
+  }
+};

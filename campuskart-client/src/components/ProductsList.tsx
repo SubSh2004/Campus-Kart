@@ -22,9 +22,10 @@ interface Item {
 interface ProductsListProps {
   searchQuery?: string;
   selectedCategory?: string;
+  availabilityFilter?: string;
 }
 
-export default function ProductsList({ searchQuery = '', selectedCategory = 'All' }: ProductsListProps) {
+export default function ProductsList({ searchQuery = '', selectedCategory = 'All', availabilityFilter = 'All' }: ProductsListProps) {
   const user = useRecoilValue(userAtom);
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
@@ -82,7 +83,7 @@ export default function ProductsList({ searchQuery = '', selectedCategory = 'All
     );
   }
 
-  // Filter items based on search query and selected category
+  // Filter items based on search query, category, and availability
   const filteredItems = items.filter((item) => {
     // Filter by search query
     let matchesSearch = true;
@@ -101,7 +102,13 @@ export default function ProductsList({ searchQuery = '', selectedCategory = 'All
       matchesCategory = item.category === selectedCategory;
     }
     
-    return matchesSearch && matchesCategory;
+    // Filter by availability
+    let matchesAvailability = true;
+    if (availabilityFilter && availabilityFilter !== 'All') {
+      matchesAvailability = availabilityFilter === 'Available' ? item.available : !item.available;
+    }
+    
+    return matchesSearch && matchesCategory && matchesAvailability;
   });
 
   if (filteredItems.length === 0) {
@@ -113,10 +120,14 @@ export default function ProductsList({ searchQuery = '', selectedCategory = 'All
               <p className="text-gray-600 dark:text-gray-300 text-base sm:text-lg">No items found for "{searchQuery}"</p>
               <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mt-2">Try searching with different keywords</p>
             </>
-          ) : selectedCategory && selectedCategory !== 'All' ? (
+          ) : (selectedCategory && selectedCategory !== 'All') || (availabilityFilter && availabilityFilter !== 'All') ? (
             <>
-              <p className="text-gray-600 dark:text-gray-300 text-base sm:text-lg">No items found in {selectedCategory}</p>
-              <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mt-2">Try selecting a different category</p>
+              <p className="text-gray-600 dark:text-gray-300 text-base sm:text-lg">
+                No items found {selectedCategory !== 'All' ? `in ${selectedCategory}` : ''} 
+                {selectedCategory !== 'All' && availabilityFilter !== 'All' ? ' - ' : ''}
+                {availabilityFilter !== 'All' ? availabilityFilter : ''}
+              </p>
+              <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mt-2">Try adjusting your filters</p>
             </>
           ) : (
             <>

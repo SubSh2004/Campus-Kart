@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
 import { userAtom } from '../store/user.atom';
@@ -14,6 +14,9 @@ export default function Home() {
   const { theme, toggleTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [availabilityFilter, setAvailabilityFilter] = useState('All');
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const filterRef = useRef<HTMLDivElement>(null);
   
   const organizationName = user.email ? getOrganizationName(user.email) : '';
 
@@ -28,6 +31,19 @@ export default function Home() {
     'For Rent',
     'Other'
   ];
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
+        setIsFilterOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const activeFiltersCount = (selectedCategory !== 'All' ? 1 : 0) + (availabilityFilter !== 'All' ? 1 : 0);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-950 transition-colors duration-200">
@@ -194,24 +210,128 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Category Filter Tabs */}
+        {/* Filter Dropdown - Compact & Mobile-Friendly */}
         <div className="mb-6">
-          <div className="max-w-5xl mx-auto">
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Filter by Category:</h3>
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => setSelectedCategory(category)}
-                  className={`px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-all ${
-                    selectedCategory === category
-                      ? 'bg-indigo-600 text-white shadow-md'
-                      : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700'
-                  }`}
-                >
-                  {category}
-                </button>
-              ))}
+          <div className="max-w-5xl mx-auto" ref={filterRef}>
+            <div className="relative">
+              <button
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                className="flex items-center justify-between w-full sm:w-auto px-4 py-3 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                  </svg>
+                  <span className="font-medium text-gray-700 dark:text-gray-200">Filters</span>
+                  {activeFiltersCount > 0 && (
+                    <span className="bg-indigo-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                      {activeFiltersCount}
+                    </span>
+                  )}
+                </div>
+                <svg className={`w-5 h-5 text-gray-600 dark:text-gray-300 transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {/* Dropdown Menu */}
+              {isFilterOpen && (
+                <div className="absolute top-full left-0 right-0 sm:right-auto sm:w-80 mt-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-xl z-50 overflow-hidden animate-fade-in">
+                  {/* Category Section */}
+                  <div className="p-4 border-b border-gray-200 dark:border-slate-700">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-bold text-gray-900 dark:text-white">Category</h3>
+                      {selectedCategory !== 'All' && (
+                        <button
+                          onClick={() => setSelectedCategory('All')}
+                          className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {categories.map((category) => (
+                        <button
+                          key={category}
+                          onClick={() => setSelectedCategory(category)}
+                          className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                            selectedCategory === category
+                              ? 'bg-indigo-600 text-white shadow-md'
+                              : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'
+                          }`}
+                        >
+                          {category}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Availability Section */}
+                  <div className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-bold text-gray-900 dark:text-white">Availability</h3>
+                      {availabilityFilter !== 'All' && (
+                        <button
+                          onClick={() => setAvailabilityFilter('All')}
+                          className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <button
+                        onClick={() => setAvailabilityFilter('All')}
+                        className={`w-full px-3 py-2 rounded-md text-sm font-medium text-left transition-all ${
+                          availabilityFilter === 'All'
+                            ? 'bg-indigo-600 text-white shadow-md'
+                            : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'
+                        }`}
+                      >
+                        All Items
+                      </button>
+                      <button
+                        onClick={() => setAvailabilityFilter('Available')}
+                        className={`w-full px-3 py-2 rounded-md text-sm font-medium text-left transition-all flex items-center gap-2 ${
+                          availabilityFilter === 'Available'
+                            ? 'bg-indigo-600 text-white shadow-md'
+                            : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'
+                        }`}
+                      >
+                        <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                        Available Only
+                      </button>
+                      <button
+                        onClick={() => setAvailabilityFilter('Sold Out')}
+                        className={`w-full px-3 py-2 rounded-md text-sm font-medium text-left transition-all flex items-center gap-2 ${
+                          availabilityFilter === 'Sold Out'
+                            ? 'bg-indigo-600 text-white shadow-md'
+                            : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'
+                        }`}
+                      >
+                        <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                        Sold Out
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Clear All Button */}
+                  {activeFiltersCount > 0 && (
+                    <div className="p-3 border-t border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900">
+                      <button
+                        onClick={() => {
+                          setSelectedCategory('All');
+                          setAvailabilityFilter('All');
+                        }}
+                        className="w-full px-4 py-2 bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-200 rounded-md text-sm font-medium transition-colors"
+                      >
+                        Clear All Filters
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -220,9 +340,12 @@ export default function Home() {
           <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-2">
             {searchQuery 
               ? `Results for "${searchQuery}"` 
-              : selectedCategory === 'All' 
-                ? 'Available Items' 
-                : `${selectedCategory} Items`}
+              : selectedCategory === 'All' && availabilityFilter === 'All'
+                ? 'All Items' 
+                : [
+                    selectedCategory !== 'All' ? selectedCategory : null,
+                    availabilityFilter !== 'All' ? availabilityFilter : null
+                  ].filter(Boolean).join(' - ') || 'All Items'}
           </h2>
           {user.isLoggedIn && organizationName ? (
             <p className="text-xs sm:text-sm text-gray-600 dark:text-slate-400 mt-1">
@@ -233,7 +356,7 @@ export default function Home() {
           )}
         </div>
         
-        <ProductsList searchQuery={searchQuery} selectedCategory={selectedCategory} />
+        <ProductsList searchQuery={searchQuery} selectedCategory={selectedCategory} availabilityFilter={availabilityFilter} />
       </main>
 
       {/* Clean Footer */}

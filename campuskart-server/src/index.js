@@ -25,7 +25,8 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001', 
   'http://localhost:3002',
-  'https://campus-kart-navy.vercel.app',
+  'https://campus-kart-navy.vercel.app', // Old domain (kept for transition)
+  'https://campus-zon-navy.vercel.app', // New CampusZon domain
   process.env.FRONTEND_URL
 ].filter(Boolean); // Remove undefined values
 

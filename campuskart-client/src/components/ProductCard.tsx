@@ -66,10 +66,9 @@ export default function ProductCard({ item }: ProductCardProps) {
         return;
       }
 
-      // Create or get chat with the seller
-      const response = await axios.post(
-        `${API_URL}/api/chat/chat`,
-        { otherUserId: item.userId },
+      // Create or get chat with the seller (correct endpoint)
+      const response = await axios.get(
+        `${API_URL}/api/chat/chat/${item.userId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
@@ -87,17 +86,13 @@ export default function ProductCard({ item }: ProductCardProps) {
     e.preventDefault();
     e.stopPropagation();
     
-    if (!item.userPhone && !item.userEmail) {
-      alert('Contact information not available');
+    if (!item.userPhone) {
+      alert('Phone number not available');
       return;
     }
 
-    const contactInfo = [];
-    if (item.userName) contactInfo.push(`Seller: ${item.userName}`);
-    if (item.userEmail) contactInfo.push(`Email: ${item.userEmail}`);
-    if (item.userPhone) contactInfo.push(`Phone: ${item.userPhone}`);
-    
-    alert(contactInfo.join('\n'));
+    // Open phone dialer with the seller's number
+    window.location.href = `tel:${item.userPhone}`;
   };
 
   const handleBookClick = (e: React.MouseEvent) => {

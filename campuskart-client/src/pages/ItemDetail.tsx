@@ -15,6 +15,7 @@ interface Item {
   available: boolean;
   userName: string;
   userPhone: string;
+  userEmail: string;
   userHostel: string;
   userId: string;
   createdAt: string;
@@ -229,6 +230,18 @@ export default function ItemDetail() {
                       <p className="text-sm text-gray-500 dark:text-gray-400">Phone</p>
                       <a href={`tel:${item.userPhone}`} className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
                         {item.userPhone}
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 text-gray-400 dark:text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
+                      <a href={`mailto:${item.userEmail}`} className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 break-all">
+                        {item.userEmail}
                       </a>
                     </div>
                   </div>

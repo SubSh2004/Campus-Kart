@@ -1,9 +1,12 @@
 import Chat from './models/chat.model.js';
 import Message from './models/message.model.js';
 
+// Module-scoped references so other controllers can emit events through sockets
+let ioRef = null;
+const userSockets = new Map(); // userId -> socketId
+
 export const setupSocketManager = (io) => {
-  // Store user socket connections
-  const userSockets = new Map(); // userId -> socketId
+  ioRef = io;
 
   io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
@@ -58,8 +61,8 @@ export const setupSocketManager = (io) => {
 
         // Emit to receiver if online
         const receiverSocketId = userSockets.get(receiverId);
-        if (receiverSocketId) {
-          io.to(receiverSocketId).emit('newPrivateMessage', {
+        if (receiverSocketId && ioRef) {
+          ioRef.to(receiverSocketId).emit('newPrivateMessage', {
             ...newMessage.toObject(),
             chatId
           });
@@ -79,8 +82,8 @@ export const setupSocketManager = (io) => {
       
       // Send notification to seller if online
       const sellerSocketId = userSockets.get(sellerId);
-      if (sellerSocketId) {
-        io.to(sellerSocketId).emit('newBookingRequest', booking);
+      if (sellerSocketId && ioRef) {
+        ioRef.to(sellerSocketId).emit('newBookingRequest', booking);
       }
     });
 
@@ -101,8 +104,8 @@ export const setupSocketManager = (io) => {
       
       // Notify receiver if online
       const receiverSocketId = userSockets.get(receiverId);
-      if (receiverSocketId) {
-        io.to(receiverSocketId).emit('messageDeleted', { messageId, chatId });
+      if (receiverSocketId && ioRef) {
+        ioRef.to(receiverSocketId).emit('messageDeleted', { messageId, chatId });
       }
     });
 
@@ -112,8 +115,8 @@ export const setupSocketManager = (io) => {
       
       // Notify other user if online
       const otherSocketId = userSockets.get(otherUserId);
-      if (otherSocketId) {
-        io.to(otherSocketId).emit('conversationDeleted', { chatId });
+      if (otherSocketId && ioRef) {
+        ioRef.to(otherSocketId).emit('conversationDeleted', { chatId });
       }
     });
 
@@ -127,4 +130,17 @@ export const setupSocketManager = (io) => {
       console.log('User disconnected:', socket.id);
     });
   });
+};
+
+// Helper to emit events to a specific user from other server-side controllers
+export const sendToUser = (userId, event, payload) => {
+  try {
+    const socketId = userSockets.get(userId);
+    if (!socketId || !ioRef) return false;
+    ioRef.to(socketId).emit(event, payload);
+    return true;
+  } catch (err) {
+    console.error('Error in sendToUser:', err);
+    return false;
+  }
 };

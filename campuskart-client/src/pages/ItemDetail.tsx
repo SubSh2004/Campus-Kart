@@ -73,6 +73,7 @@ export default function ItemDetail() {
         itemId: item.id,
         itemTitle: item.title,
         itemPrice: item.price,
+        itemCategory: item.category,
         sellerId: item.userId,
         sellerName: item.userName,
         message: bookingMessage
@@ -84,6 +85,9 @@ export default function ItemDetail() {
           sellerId: item.userId,
           booking: response.data.booking
         });
+
+        // The server creates the booking message and notifies the seller directly.
+        // No need to emit 'sendPrivateMessage' from the client (avoids duplicate saves).
 
         setBookingStatus({ type: 'success', message: response.data.message });
         setShowBookingModal(false);

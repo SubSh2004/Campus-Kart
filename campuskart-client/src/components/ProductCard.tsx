@@ -1,9 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useRecoilValue } from 'recoil';
 import { userAtom } from '../store/user.atom';
-import { API_URL } from '../config/api';
+import { API_URL, SOCKET_URL } from '../config/api';
+import { io, Socket } from 'socket.io-client';
 
 interface Item {
   id: number;
@@ -30,12 +31,23 @@ export default function ProductCard({ item }: ProductCardProps) {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [bookingMessage, setBookingMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [socket, setSocket] = useState<Socket | null>(null);
 
   // Use imageUrl directly (it's either a full ImgBB URL or null)
   const imageUrl = item.imageUrl || '/placeholder.jpg';
   
   // Check if current user uploaded this item
   const isOwnItem = currentUser?.email === item.userEmail;
+
+  // Initialize socket connection
+  useEffect(() => {
+    const newSocket = io(SOCKET_URL);
+    setSocket(newSocket);
+
+    return () => {
+      newSocket.close();
+    };
+  }, []);
 
   const handleChatClick = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -103,20 +115,39 @@ export default function ProductCard({ item }: ProductCardProps) {
   };
 
   const handleBookingSubmit = async () => {
+    if (!item.userId || !item.userName) {
+      alert('Seller information is missing');
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       const token = localStorage.getItem('token');
       
       const response = await axios.post(
-        `${API_URL}/api/booking/book`,
+        `${API_URL}/api/booking/create`,
         {
           itemId: item.id,
+          itemTitle: item.title,
+          itemPrice: item.price,
+          itemCategory: item.category,
+          sellerId: item.userId,
+          sellerName: item.userName,
           message: bookingMessage
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (response.data.success) {
+        // Send real-time notification via socket
+        socket?.emit('sendBookingRequest', {
+          sellerId: item.userId,
+          booking: response.data.booking
+        });
+
+        // The server creates the booking message and notifies the seller directly.
+        // No need to emit 'sendPrivateMessage' from the client (avoids duplicate saves).
+
         alert('Booking request sent successfully!');
         setShowBookingModal(false);
         setBookingMessage('');

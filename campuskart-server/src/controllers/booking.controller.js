@@ -1,9 +1,12 @@
 import Booking from '../models/booking.model.js';
+import Chat from '../models/chat.model.js';
+import Message from '../models/message.model.js';
+import { sendToUser } from '../socketManager.js';
 
 // Create a booking request
 export const createBooking = async (req, res) => {
   try {
-    const { itemId, itemTitle, itemPrice, sellerId, sellerName, message } = req.body;
+    const { itemId, itemTitle, itemPrice, sellerId, sellerName, message, itemCategory } = req.body;
     const buyerId = req.user._id.toString();
     const buyerName = req.user.username;
     const buyerEmail = req.user.email;
@@ -37,7 +40,61 @@ export const createBooking = async (req, res) => {
       status: 'pending'
     });
 
-    res.json({ success: true, booking, message: 'Booking request sent successfully!' });
+    // Create or find chat between buyer and seller
+    let chat = await Chat.findOne({
+      participants: { $all: [buyerId, sellerId] }
+    });
+
+    if (!chat) {
+      chat = await Chat.create({
+        participants: [buyerId, sellerId],
+        lastMessage: '',
+        lastMessageTime: new Date(),
+        unreadCount: new Map()
+      });
+    }
+
+    // Create automatic booking notification message
+    const bookingMessage = `🛒 I want to book your item:\n\n📦 Item: ${itemTitle}\n💰 Price: ₹${itemPrice}${itemCategory ? `\n📂 Category: ${itemCategory}` : ''}\n\n${message ? `Message: ${message}` : 'No additional message'}`;
+
+    const newMessage = await Message.create({
+      chatId: chat._id,
+      senderId: buyerId,
+      senderName: buyerName,
+      receiverId: sellerId,
+      message: bookingMessage
+    });
+
+    // Update chat with latest message
+    await Chat.findByIdAndUpdate(chat._id, {
+      lastMessage: bookingMessage.substring(0, 100) + (bookingMessage.length > 100 ? '...' : ''),
+      lastMessageTime: new Date(),
+      $inc: { [`unreadCount.${sellerId}`]: 1 }
+    });
+
+    // Try to notify seller in real-time via sockets (if connected)
+    try {
+      sendToUser(sellerId, 'newPrivateMessage', {
+        ...newMessage.toObject(),
+        chatId: chat._id
+      });
+      // Also send booking notification
+      sendToUser(sellerId, 'newBookingRequest', booking);
+    } catch (err) {
+      console.warn('Failed to send real-time booking notification:', err);
+    }
+
+    // Return booking with chat info. Frontend no longer needs to emit sendPrivateMessage when autoMessage present.
+    res.json({ 
+      success: true, 
+      booking, 
+      chatId: chat._id,
+      message: 'Booking request sent successfully!',
+      autoMessage: {
+        ...newMessage.toObject(),
+        chatId: chat._id
+      }
+    });
   } catch (error) {
     console.error('Error creating booking:', error);
     res.status(500).json({ success: false, message: 'Failed to create booking' });

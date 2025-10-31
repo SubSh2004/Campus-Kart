@@ -11,6 +11,7 @@ export default function Signup() {
   const [otp, setOtp] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [countryCode, setCountryCode] = useState('+91');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [hostelName, setHostelName] = useState('');
   const [error, setError] = useState('');
@@ -20,6 +21,25 @@ export default function Signup() {
   const { signup } = useAuth();
 
   const organizationName = email ? getOrganizationName(email) : '';
+
+  // Popular country codes
+  const countryCodes = [
+    { code: '+91', country: 'India' },
+    { code: '+1', country: 'USA/Canada' },
+    { code: '+44', country: 'UK' },
+    { code: '+61', country: 'Australia' },
+    { code: '+971', country: 'UAE' },
+    { code: '+65', country: 'Singapore' },
+    { code: '+86', country: 'China' },
+    { code: '+81', country: 'Japan' },
+    { code: '+82', country: 'South Korea' },
+    { code: '+33', country: 'France' },
+    { code: '+49', country: 'Germany' },
+    { code: '+39', country: 'Italy' },
+    { code: '+7', country: 'Russia' },
+    { code: '+55', country: 'Brazil' },
+    { code: '+27', country: 'South Africa' },
+  ];
 
   // Step 1: Send OTP to email
   const handleSendOTP = async (e: React.FormEvent) => {
@@ -91,7 +111,10 @@ export default function Signup() {
 
     setLoading(true);
 
-    const result = await signup({ username, email, password, phoneNumber, hostelName });
+    // Combine country code with phone number
+    const fullPhoneNumber = `${countryCode} ${phoneNumber}`;
+
+    const result = await signup({ username, email, password, phoneNumber: fullPhoneNumber, hostelName });
 
     if (!result.success) {
       setError(result.message);
@@ -263,15 +286,28 @@ export default function Signup() {
                 <label htmlFor="phoneNumber" className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
                   Phone Number
                 </label>
-                <input
-                  id="phoneNumber"
-                  type="tel"
-                  required
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  className="w-full px-4 py-3 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 dark:focus:border-purple-400 outline-none transition-all duration-300 font-medium"
-                  placeholder="+91 1234567890"
-                />
+                <div className="flex gap-2">
+                  <select
+                    value={countryCode}
+                    onChange={(e) => setCountryCode(e.target.value)}
+                    className="w-32 px-3 py-3 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 dark:focus:border-purple-400 outline-none transition-all duration-300 font-medium"
+                  >
+                    {countryCodes.map(({ code, country }) => (
+                      <option key={code} value={code}>
+                        {code} {country}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    id="phoneNumber"
+                    type="tel"
+                    required
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    className="flex-1 px-4 py-3 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 dark:focus:border-purple-400 outline-none transition-all duration-300 font-medium"
+                    placeholder="1234567890"
+                  />
+                </div>
               </div>
 
               <div>

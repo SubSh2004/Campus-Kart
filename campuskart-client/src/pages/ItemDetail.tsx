@@ -240,7 +240,7 @@ export default function ItemDetail() {
                     </svg>
                     <div>
                       <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
-                      <a href={`mailto:${item.userEmail}`} className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 break-all">
+                      <a href={`mailto:${item.userEmail}`} className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
                         {item.userEmail}
                       </a>
                     </div>
